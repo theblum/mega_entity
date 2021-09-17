@@ -5,8 +5,8 @@ const Entity = @import("entity.zig").Entity;
 
 pub const MAX_ENTITIES = 1024;
 
-pub const EntityHandle = struct {
-    id: usize,
+const EntityHandle = struct {
+    index: usize,
     generation: u32,
 };
 
@@ -19,8 +19,6 @@ pub const EntityManager = struct {
     const Self = @This();
 
     entities: []EntityItem,
-    entityCount: usize = 0,
-
     allocator: *std.mem.Allocator,
 
     pub fn init(allocator: *std.mem.Allocator) !Self {
@@ -41,24 +39,20 @@ pub const EntityManager = struct {
         self.allocator.free(self.entities);
     }
 
-    pub fn createEntity(self: *Self) !EntityHandle {
-        if (!(self.entityCount < MAX_ENTITIES))
-            return error.ExceededMaxEntities;
-
-        self.entityCount += 1;
+    pub fn createEntity(self: *Self, entity: Entity) !EntityHandle {
         var result: EntityHandle = undefined;
 
         for (self.entities) |*item, i| {
             if (item.entity) |_| {} else {
                 item.generation += 1;
-                item.entity = Entity{};
+                item.entity = entity;
 
-                result.id = i;
+                result.index = i;
                 result.generation = item.generation;
 
                 break;
             }
-        }
+        } else return error.ExceededMaxEntities;
 
         return result;
     }
@@ -66,14 +60,15 @@ pub const EntityManager = struct {
     pub fn deleteEntity(self: *Self, handle: EntityHandle) void {
         for (self.entities) |*item, i| {
             // @Note: Do I need to worry about checking the generation here?
-            if (handle.id == i and handle.generation == item.generation)
+            if (handle.index == i and handle.generation == item.generation) {
                 item.entity = null;
+            }
         }
     }
 
     pub fn getEntityPtr(self: Self, handle: EntityHandle) !*Entity {
         var item = for (self.entities) |*item, i| {
-            if (handle.id == i) {
+            if (handle.index == i) {
                 if (handle.generation != item.generation)
                     return error.GenerationMismatch;
 
