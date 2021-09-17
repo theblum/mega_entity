@@ -7,6 +7,7 @@ pub const EntityFlags = enum {
 
     isAlive,
     isRenderable,
+    hasPhysics,
 };
 
 pub const Entity = struct {
@@ -17,6 +18,12 @@ pub const Entity = struct {
     position: m.Vec2 = undefined,
     velocity: m.Vec2 = undefined,
     acceleration: m.Vec2 = undefined,
+    mass: f32 = undefined,
+    color: m.Vec4 = undefined,
+
+    pub fn flagIsSet(self: Self, flag: EntityFlags) bool {
+        return self.flags.isSet(@enumToInt(flag));
+    }
 
     pub fn setFlag(self: *Self, flag: EntityFlags) void {
         self.flags.set(@enumToInt(flag));
