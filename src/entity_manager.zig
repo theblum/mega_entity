@@ -58,24 +58,18 @@ pub const EntityManager = struct {
     }
 
     pub fn deleteEntity(self: *Self, handle: EntityHandle) void {
-        for (self.entities) |*item, i| {
-            // @Note: Do I need to worry about checking the generation here?
-            if (handle.index == i and handle.generation == item.generation) {
-                item.entity = null;
-            }
-        }
+        var item = &self.entities[handle.index];
+
+        // @Note: This silently fails if the generations don't match.  Should this be the case?
+        // Or should we return an error? Or not even check the generation?
+        if (handle.generation == item.generation)
+            item.entity = null;
     }
 
     pub fn getEntityPtr(self: Self, handle: EntityHandle) !*Entity {
-        var item = for (self.entities) |*item, i| {
-            if (handle.index == i) {
-                if (handle.generation != item.generation)
-                    return error.GenerationMismatch;
+        var item = &self.entities[handle.index];
 
-                break item;
-            }
-        } else return error.InvalidHandle;
-
-        return if (item.entity) |*e| e else error.InvalidHandle;
+        if (handle.generation != item.generation) return error.GenerationMismatch;
+        return if (item.entity) |*entity| entity else error.InvalidHandle;
     }
 };
