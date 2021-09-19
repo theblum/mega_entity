@@ -1,3 +1,5 @@
 usingnamespace @cImport({
-    @cInclude("raylib.h");
+    @cInclude("SFML/Graphics.h");
+    @cInclude("SFML/Window.h");
+    @cInclude("SFML/System.h");
 });

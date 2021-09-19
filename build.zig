@@ -8,7 +8,9 @@ pub fn build(b: *std.build.Builder) void {
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.addPackagePath("zlm", "vendor/zlm/zlm.zig");
-    exe.linkSystemLibrary("raylib");
+    exe.linkSystemLibrary("csfml-graphics");
+    exe.linkSystemLibrary("csfml-window");
+    exe.linkSystemLibrary("csfml-system");
     exe.linkLibC();
     exe.install();
 

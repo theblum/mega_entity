@@ -25,10 +25,38 @@ pub fn main() anyerror!void {
     defer state.entityManager.deinit();
 
     var systemManager = SystemManager.init(&systemList);
-    log.info("sys: {s}", .{systemManager.systems});
 
-    c.InitWindow(renderWidth, renderHeight, programName);
-    defer c.CloseWindow();
+    // @Note: These are all just the default settings except for `antialiasingLevel`.
+    // Also, as per the documentation: All these settings with the exception of the compatibility
+    // flag and anti-aliasing level have no impact on the regular SFML rendering (graphics module),
+    // so you may need to use this structure only if you're using SFML as a windowing system for
+    // custom OpenGL rendering.
+    const settings = .{
+        .depthBits = 0,
+        .stencilBits = 0,
+        .antialiasingLevel = 8,
+        .majorVersion = 1,
+        .minorVersion = 1,
+        .attributeFlags = c.sfContextDefault,
+        .sRgbCapable = c.sfFalse,
+    };
+
+    state.window = c.sfRenderWindow_create(
+        .{ .width = renderWidth, .height = renderHeight, .bitsPerPixel = 32 },
+        programName,
+        c.sfDefaultStyle,
+        &settings,
+    ) orelse return error.WindowCreationFailed;
+    defer c.sfRenderWindow_destroy(state.window);
+
+    state.font = c.sfFont_createFromFile("resources/iosevka.ttf") orelse return error.FontLoadingError;
+    defer c.sfFont_destroy(state.font);
+
+    state.circle = c.sfCircleShape_create().?;
+    defer c.sfCircleShape_destroy(state.circle);
+
+    c.sfRenderWindow_setVerticalSyncEnabled(state.window, c.sfFalse);
+    c.sfRenderWindow_setFramerateLimit(state.window, targetFPS);
 
     {
         var i: usize = 0;
@@ -38,7 +66,7 @@ pub fn main() anyerror!void {
                 .velocity = m.vec2(0.0, 0.0),
                 .acceleration = m.vec2(0.0, 0.0),
                 .mass = rand.float(f32) * 3.0,
-                .color = m.vec4(0.6, 0.4, rand.float(f32), 0.95),
+                .color = m.vec4(0.6, 0.4, rand.float(f32), 0.8),
             });
 
             var moverPtr = try state.entityManager.getEntityPtr(moverHandle);
@@ -46,20 +74,40 @@ pub fn main() anyerror!void {
         }
     }
 
-    c.SetTargetFPS(targetFPS);
-    while (!c.WindowShouldClose()) {
-        state.dt = c.GetFrameTime();
+    var clock = c.sfClock_create();
+    defer c.sfClock_destroy(clock);
+    while (c.sfRenderWindow_isOpen(state.window) == c.sfTrue) {
+        state.dt = c.sfTime_asSeconds(c.sfClock_restart(clock));
 
-        c.ClearBackground(.{ .r = 50, .g = 100, .b = 150, .a = 255 });
-        c.BeginDrawing();
+        var event: c.sfEvent = undefined;
+        while (c.sfRenderWindow_pollEvent(state.window, &event) == c.sfTrue) {
+            if (event.type == c.sfEvtClosed)
+                c.sfRenderWindow_close(state.window);
+        }
+
+        c.sfRenderWindow_clear(state.window, c.sfColor_fromInteger(0x2288ddff));
 
         systemManager.tick(&state);
 
         if (std.builtin.mode == .Debug) {
-            c.DrawText(programName, 10, 10, 20, c.LIME);
-            c.DrawFPS(10, renderHeight - 30);
+            // @Note: Text will be: "0.XXXX s/f"
+            var buffer: [11:0]u8 = undefined;
+            _ = try std.fmt.bufPrintZ(&buffer, "{d:.4} s/f", .{state.dt});
+
+            var spfText = c.sfText_create();
+            defer c.sfText_destroy(spfText);
+
+            c.sfText_setString(spfText, &buffer);
+            c.sfText_setFont(spfText, state.font);
+            c.sfText_setCharacterSize(spfText, 14);
+            c.sfText_setFillColor(spfText, c.sfGreen);
+
+            var rect = c.sfText_getGlobalBounds(spfText);
+
+            c.sfText_setPosition(spfText, .{ .x = renderWidth - 10.0 - rect.width, .y = 10.0 });
+            c.sfRenderWindow_drawText(state.window, spfText, null);
         }
 
-        c.EndDrawing();
+        c.sfRenderWindow_display(state.window);
     }
 }

@@ -5,7 +5,7 @@ const c = @import("../c.zig");
 const Entity = @import("../entity.zig").Entity;
 const State = @import("../state.zig").State;
 
-pub fn tick(entity: *Entity, _: *State) void {
+pub fn tick(entity: *Entity, state: *State) void {
     if (!entity.flagIsSet(.isRenderable))
         return;
 
@@ -18,5 +18,10 @@ pub fn tick(entity: *Entity, _: *State) void {
 
     const radius = entity.mass * 16.0;
 
-    c.DrawCircle(@floatToInt(i32, entity.position.x), @floatToInt(i32, entity.position.y), radius, color);
+    c.sfCircleShape_setPosition(state.circle, .{ .x = entity.position.x, .y = entity.position.y });
+    c.sfCircleShape_setRadius(state.circle, radius);
+    c.sfCircleShape_setFillColor(state.circle, color);
+    c.sfCircleShape_setOutlineColor(state.circle, c.sfColor_fromInteger(0x222222ff));
+    c.sfCircleShape_setOutlineThickness(state.circle, 1.0);
+    c.sfRenderWindow_drawCircleShape(state.window, state.circle, null);
 }
