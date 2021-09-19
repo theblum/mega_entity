@@ -19,6 +19,8 @@ pub fn main() anyerror!void {
     const rand = &prng.random;
 
     var state: State = undefined;
+    state.renderWidth = renderWidth;
+    state.renderHeight = renderHeight;
 
     var gpa = std.heap.GeneralPurposeAllocator(.{ .verbose_log = true }){};
     state.entityManager = try EntityManager.init(&gpa.allocator);
@@ -70,7 +72,7 @@ pub fn main() anyerror!void {
             });
 
             var moverPtr = try state.entityManager.getEntityPtr(moverHandle);
-            moverPtr.setFlags(.{ .isRenderable, .hasPhysics });
+            moverPtr.setFlags(&.{ .isRenderable, .hasPhysics });
         }
     }
 

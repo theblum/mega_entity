@@ -2,6 +2,7 @@ const std = @import("std");
 const log = std.log.scoped(.entityManager);
 
 const Entity = @import("entity.zig").Entity;
+const EntityFlags = @import("entity.zig").EntityFlags;
 
 pub const MAX_ENTITIES = 1024;
 
@@ -20,6 +21,7 @@ pub const EntityManager = struct {
 
     entities: []EntityItem,
     allocator: *std.mem.Allocator,
+    iterator: Iterator,
 
     pub fn init(allocator: *std.mem.Allocator) !Self {
         var entities = try allocator.alloc(EntityItem, MAX_ENTITIES);
@@ -27,10 +29,17 @@ pub const EntityManager = struct {
             e.* = EntityItem{};
         }
 
+        // @Todo: Figure out why `iterator` can't be created directly in the `result` struct.
+        // Currently it looks as though the `iterator.currentIndex` field gets uninitialized.
+        // Is this because `init` can return an error?
+        var iterator = Iterator{};
         var result = .{
             .entities = entities,
             .allocator = allocator,
+            .iterator = iterator,
         };
+
+        log.info("init: {d}", .{result.iterator.currentIndex});
 
         return result;
     }
@@ -72,4 +81,26 @@ pub const EntityManager = struct {
         if (handle.generation != item.generation) return error.GenerationMismatch;
         return if (item.entity) |*entity| entity else error.InvalidHandle;
     }
+
+    const Iterator = struct {
+        currentIndex: usize = 0,
+
+        pub fn next(iterator: *@This(), flags: []const EntityFlags) ?*Entity {
+            const self = @fieldParentPtr(Self, "iterator", iterator);
+
+            return for (self.entities[iterator.currentIndex..]) |*item| {
+                iterator.currentIndex += 1;
+                if (item.entity) |*entity|
+                    if (entity.hasFlags(flags))
+                        break entity;
+            } else blk: {
+                iterator.reset();
+                break :blk null;
+            };
+        }
+
+        pub fn reset(iterator: *@This()) void {
+            iterator.currentIndex = 0;
+        }
+    };
 };

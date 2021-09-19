@@ -3,12 +3,12 @@ const log = std.log.scoped(.renderSystem);
 const c = @import("../c.zig");
 
 const Entity = @import("../entity.zig").Entity;
+const EntityFlags = @import("../entity.zig").EntityFlags;
 const State = @import("../state.zig").State;
 
-pub fn tick(entity: *Entity, state: *State) void {
-    if (!entity.flagIsSet(.isRenderable))
-        return;
+pub const flags = [_]EntityFlags{.isRenderable};
 
+pub fn tick(entity: *Entity, state: *State) void {
     const color = .{
         .r = @floatToInt(u8, entity.color.x * 255.0),
         .g = @floatToInt(u8, entity.color.y * 255.0),
