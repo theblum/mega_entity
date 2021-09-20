@@ -3,7 +3,11 @@ const log = std.log.default;
 const c = @import("c.zig");
 const m = @import("zlm");
 
+const platform = @import("platform.zig");
+const Window = platform.Window;
+const Clock = platform.Clock;
 const State = @import("state.zig").State;
+const Renderer = @import("renderer.zig").Renderer;
 
 const EntityManager = @import("entity_manager.zig").EntityManager;
 const SystemManager = @import("system_manager.zig").SystemManager;
@@ -19,55 +23,31 @@ pub fn main() anyerror!void {
     const rand = &prng.random;
 
     var state: State = undefined;
-    state.renderWidth = renderWidth;
-    state.renderHeight = renderHeight;
 
-    var gpa = std.heap.GeneralPurposeAllocator(.{ .verbose_log = true }){};
-    state.entityManager = try EntityManager.init(&gpa.allocator);
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    state.entityManager = try EntityManager.init(&arena.allocator);
     defer state.entityManager.deinit();
 
     var systemManager = SystemManager.init(&systemList);
 
-    // @Note: These are all just the default settings except for `antialiasingLevel`.
-    // Also, as per the documentation: All these settings with the exception of the compatibility
-    // flag and anti-aliasing level have no impact on the regular SFML rendering (graphics module),
-    // so you may need to use this structure only if you're using SFML as a windowing system for
-    // custom OpenGL rendering.
-    const settings = .{
-        .depthBits = 0,
-        .stencilBits = 0,
-        .antialiasingLevel = 8,
-        .majorVersion = 1,
-        .minorVersion = 1,
-        .attributeFlags = c.sfContextDefault,
-        .sRgbCapable = c.sfFalse,
-    };
+    state.window = try Window.init(programName, renderWidth, renderHeight, targetFPS);
+    defer state.window.deinit();
 
-    state.window = c.sfRenderWindow_create(
-        .{ .width = renderWidth, .height = renderHeight, .bitsPerPixel = 32 },
-        programName,
-        c.sfDefaultStyle,
-        &settings,
-    ) orelse return error.WindowCreationFailed;
-    defer c.sfRenderWindow_destroy(state.window);
-
-    state.font = c.sfFont_createFromFile("resources/iosevka.ttf") orelse return error.FontLoadingError;
-    defer c.sfFont_destroy(state.font);
-
-    state.circle = c.sfCircleShape_create().?;
-    defer c.sfCircleShape_destroy(state.circle);
-
-    c.sfRenderWindow_setVerticalSyncEnabled(state.window, c.sfFalse);
-    c.sfRenderWindow_setFramerateLimit(state.window, targetFPS);
+    state.renderer = try Renderer.init(&state.window);
+    defer state.renderer.deinit();
 
     {
         var i: usize = 0;
-        while (i < 100) : (i += 1) {
+        while (i < 10) : (i += 1) {
+            const mass = rand.float(f32) * 3.0;
+            const radius = @sqrt(mass) * 20.0;
+
             var moverHandle = try state.entityManager.createEntity(.{
-                .position = m.vec2(rand.float(f32) * renderWidth, rand.float(f32) * renderHeight),
+                .position = m.vec2(rand.float(f32) * state.window.width, rand.float(f32) * state.window.height),
                 .velocity = m.vec2(0.0, 0.0),
                 .acceleration = m.vec2(0.0, 0.0),
-                .mass = rand.float(f32) * 3.0,
+                .mass = mass,
+                .radius = radius,
                 .color = m.vec4(0.6, 0.4, rand.float(f32), 0.8),
             });
 
@@ -76,18 +56,13 @@ pub fn main() anyerror!void {
         }
     }
 
-    var clock = c.sfClock_create();
-    defer c.sfClock_destroy(clock);
-    while (c.sfRenderWindow_isOpen(state.window) == c.sfTrue) {
-        state.dt = c.sfTime_asSeconds(c.sfClock_restart(clock));
+    var clock = try Clock.init();
+    defer clock.deinit();
+    while (state.window.isOpen()) {
+        state.dt = clock.getSecondsAndRestart();
 
-        var event: c.sfEvent = undefined;
-        while (c.sfRenderWindow_pollEvent(state.window, &event) == c.sfTrue) {
-            if (event.type == c.sfEvtClosed)
-                c.sfRenderWindow_close(state.window);
-        }
-
-        c.sfRenderWindow_clear(state.window, c.sfColor_fromInteger(0x2288ddff));
+        state.window.pollEvents();
+        state.renderer.clearWindow(0x2288ddff);
 
         systemManager.tick(&state);
 
@@ -96,20 +71,13 @@ pub fn main() anyerror!void {
             var buffer: [11:0]u8 = undefined;
             _ = try std.fmt.bufPrintZ(&buffer, "{d:.4} s/f", .{state.dt});
 
-            var spfText = c.sfText_create();
-            defer c.sfText_destroy(spfText);
-
-            c.sfText_setString(spfText, &buffer);
-            c.sfText_setFont(spfText, state.font);
-            c.sfText_setCharacterSize(spfText, 14);
-            c.sfText_setFillColor(spfText, c.sfGreen);
-
-            var rect = c.sfText_getGlobalBounds(spfText);
-
-            c.sfText_setPosition(spfText, .{ .x = renderWidth - 10.0 - rect.width, .y = 10.0 });
-            c.sfRenderWindow_drawText(state.window, spfText, null);
+            state.renderer.drawText(
+                &buffer,
+                .{ .x = 10.0, .y = 10.0 },
+                .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 14 },
+            );
         }
 
-        c.sfRenderWindow_display(state.window);
+        state.renderer.displayWindow();
     }
 }

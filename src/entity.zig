@@ -17,6 +17,7 @@ pub const Entity = struct {
     velocity: m.Vec2 = undefined,
     acceleration: m.Vec2 = undefined,
     mass: f32 = undefined,
+    radius: f32 = undefined,
     color: m.Vec4 = undefined,
 
     pub usingnamespace FlagUtils(@This());

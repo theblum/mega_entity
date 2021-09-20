@@ -19,16 +19,16 @@ pub fn tick(entity: *Entity, state: *State) void {
     entity.position = entity.position.add(entity.velocity.scale(state.dt));
     entity.acceleration = entity.acceleration.scale(0.0);
 
-    if (entity.position.x > @intToFloat(f32, state.renderWidth)) {
-        entity.position.x = @intToFloat(f32, state.renderWidth);
+    if (entity.position.x > state.window.width - entity.radius) {
+        entity.position.x = state.window.width - entity.radius;
         entity.velocity.x *= -1.0;
-    } else if (entity.position.x < 0) {
-        entity.position.x = 0;
+    } else if (entity.position.x < 0 + entity.radius) {
+        entity.position.x = entity.radius;
         entity.velocity.x *= -1.0;
     }
 
-    if (entity.position.y > @intToFloat(f32, state.renderHeight)) {
-        entity.position.y = @intToFloat(f32, state.renderHeight);
+    if (entity.position.y > state.window.height - entity.radius) {
+        entity.position.y = state.window.height - entity.radius;
         entity.velocity.y *= -1;
     }
 }
