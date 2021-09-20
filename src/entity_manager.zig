@@ -20,8 +20,8 @@ pub const EntityManager = struct {
     const Self = @This();
 
     entities: []EntityItem,
+    entityCount: usize = 0,
     allocator: *std.mem.Allocator,
-    iterator: Iterator,
 
     pub fn init(allocator: *std.mem.Allocator) !Self {
         var entities = try allocator.alloc(EntityItem, MAX_ENTITIES);
@@ -29,17 +29,10 @@ pub const EntityManager = struct {
             e.* = EntityItem{};
         }
 
-        // @Todo: Figure out why `iterator` can't be created directly in the `result` struct.
-        // Currently it looks as though the `iterator.currentIndex` field gets uninitialized.
-        // Is this because `init` can return an error?
-        var iterator = Iterator{};
         var result = .{
             .entities = entities,
             .allocator = allocator,
-            .iterator = iterator,
         };
-
-        log.info("init: {d}", .{result.iterator.currentIndex});
 
         return result;
     }
@@ -51,6 +44,8 @@ pub const EntityManager = struct {
     pub fn createEntity(self: *Self, entity: Entity) !EntityHandle {
         var result: EntityHandle = undefined;
 
+        if (self.entityCount >= self.entities.len) return error.ExceededMaxEntries;
+
         for (self.entities) |*item, i| {
             if (item.entity) |_| {} else {
                 item.generation += 1;
@@ -58,6 +53,8 @@ pub const EntityManager = struct {
 
                 result.index = i;
                 result.generation = item.generation;
+
+                self.entityCount += 1;
 
                 break;
             }
@@ -71,8 +68,10 @@ pub const EntityManager = struct {
 
         // @Note: This silently fails if the generations don't match.  Should this be the case?
         // Or should we return an error? Or not even check the generation?
-        if (handle.generation == item.generation)
+        if (handle.generation == item.generation) {
             item.entity = null;
+            self.entityCount -= 1;
+        }
     }
 
     pub fn getEntityPtr(self: Self, handle: EntityHandle) !*Entity {
@@ -82,25 +81,39 @@ pub const EntityManager = struct {
         return if (item.entity) |*entity| entity else error.InvalidHandle;
     }
 
+    pub fn iterator(self: *Self) Iterator {
+        return .{
+            .entityManager = self,
+        };
+    }
+
     const Iterator = struct {
+        entityManager: *EntityManager,
         currentIndex: usize = 0,
+        entitiesSeen: usize = 0,
 
-        pub fn next(iterator: *@This(), flags: []const EntityFlags) ?*Entity {
-            const self = @fieldParentPtr(Self, "iterator", iterator);
+        pub fn next(self: *@This(), flags: []const EntityFlags) ?*Entity {
+            var manager = self.entityManager;
+            var result = for (manager.entities[self.currentIndex..]) |*item| {
+                self.currentIndex += 1;
+                if (self.entitiesSeen >= manager.entityCount) break null;
 
-            return for (self.entities[iterator.currentIndex..]) |*item| {
-                iterator.currentIndex += 1;
-                if (item.entity) |*entity|
+                if (item.entity) |*entity| {
+                    self.entitiesSeen += 1;
                     if (entity.hasFlags(flags))
                         break entity;
-            } else blk: {
-                iterator.reset();
+                }
+            } else null;
+
+            return if (result) |r| r else blk: {
+                self.reset();
                 break :blk null;
             };
         }
 
-        pub fn reset(iterator: *@This()) void {
-            iterator.currentIndex = 0;
+        pub fn reset(self: *@This()) void {
+            self.currentIndex = 0;
+            self.entitiesSeen = 0;
         }
     };
 };
