@@ -41,8 +41,8 @@ pub fn main() anyerror!void {
     {
         var i: usize = 0;
         while (i < 10) : (i += 1) {
-            const mass = rand.float(f32) * 3.0;
-            const radius = @sqrt(mass) * 20.0;
+            const mass = (rand.float(f32) * 20.0) + 10.0;
+            const radius = @sqrt(mass) * 5.0;
 
             var moverHandle = try state.entityManager.createEntity(.{
                 .position = m.vec2(rand.float(f32) * state.window.width, rand.float(f32) * state.window.height),

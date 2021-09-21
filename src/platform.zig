@@ -58,7 +58,7 @@ pub const Window = struct {
         while (c.sfRenderWindow_pollEvent(self.handle, &event) == c.sfTrue) {
             switch (event.type) {
                 c.sfEvtClosed => c.sfRenderWindow_close(self.handle),
-                c.sfEvtKeyReleased => {
+                c.sfEvtKeyPressed => {
                     if (event.key.code == c.sfKeyEscape)
                         c.sfRenderWindow_close(self.handle);
                 },
