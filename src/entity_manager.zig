@@ -6,13 +6,13 @@ const EntityFlags = @import("entity.zig").EntityFlags;
 
 pub const MAX_ENTITIES = 1024;
 
-const EntityHandle = struct {
+pub const EntityHandle = struct {
     index: usize,
     generation: u32,
 };
 
 const EntityItem = struct {
-    generation: u32 = 0,
+    handle: EntityHandle,
     entity: ?Entity = null,
 };
 
@@ -25,8 +25,8 @@ pub const EntityManager = struct {
 
     pub fn init(allocator: *std.mem.Allocator) !Self {
         var entities = try allocator.alloc(EntityItem, MAX_ENTITIES);
-        for (entities) |*e| {
-            e.* = EntityItem{};
+        for (entities) |*e, i| {
+            e.* = EntityItem{ .handle = .{ .index = i, .generation = 0 } };
         }
 
         var result = .{
@@ -46,13 +46,12 @@ pub const EntityManager = struct {
 
         if (self.entityCount >= self.entities.len) return error.ExceededMaxEntries;
 
-        for (self.entities) |*item, i| {
+        for (self.entities) |*item| {
             if (item.entity) |_| {} else {
-                item.generation += 1;
+                item.handle.generation += 1;
                 item.entity = entity;
 
-                result.index = i;
-                result.generation = item.generation;
+                result = item.handle;
 
                 self.entityCount += 1;
 
@@ -68,7 +67,7 @@ pub const EntityManager = struct {
 
         // @Note: This silently fails if the generations don't match.  Should this be the case?
         // Or should we return an error? Or not even check the generation?
-        if (handle.generation == item.generation) {
+        if (handle.generation == item.handle.generation) {
             item.entity = null;
             self.entityCount -= 1;
         }
@@ -77,7 +76,7 @@ pub const EntityManager = struct {
     pub fn getEntityPtr(self: Self, handle: EntityHandle) !*Entity {
         var item = &self.entities[handle.index];
 
-        if (handle.generation != item.generation) return error.GenerationMismatch;
+        if (handle.generation != item.handle.generation) return error.GenerationMismatch;
         return if (item.entity) |*entity| entity else error.InvalidHandle;
     }
 
@@ -92,16 +91,17 @@ pub const EntityManager = struct {
         currentIndex: usize = 0,
         entitiesSeen: usize = 0,
 
-        pub fn next(self: *@This(), flags: []const EntityFlags) ?*Entity {
+        pub fn next(self: *@This(), flags: []const EntityFlags) ?*EntityItem {
             var manager = self.entityManager;
             var result = for (manager.entities[self.currentIndex..]) |*item| {
                 self.currentIndex += 1;
-                if (self.entitiesSeen >= manager.entityCount) break null;
+                if (self.entitiesSeen >= manager.entityCount)
+                    break null;
 
-                if (item.entity) |*entity| {
+                if (item.entity) |entity| {
                     self.entitiesSeen += 1;
                     if (entity.hasFlags(flags))
-                        break entity;
+                        break item;
                 }
             } else null;
 

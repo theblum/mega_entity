@@ -3,6 +3,7 @@ const log = std.log.scoped(.physicsSystem);
 const m = @import("zlm");
 
 const Entity = @import("../entity.zig").Entity;
+const EntityHandle = @import("../entity_manager.zig").EntityHandle;
 const EntityFlags = @import("../entity.zig").EntityFlags;
 const State = @import("../state.zig").State;
 
@@ -11,7 +12,9 @@ const wind = m.vec2(10.0, 0.0);
 
 pub const flags = [_]EntityFlags{.hasPhysics};
 
-pub fn tick(entity: *Entity, state: *State) void {
+pub fn tick(entity: *Entity, handle: EntityHandle, state: *State) void {
+    _ = handle;
+
     entity.acceleration = entity.acceleration.add(gravity);
     entity.acceleration = entity.acceleration.add(wind.scale(1.0 / entity.mass));
 
