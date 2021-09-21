@@ -1,5 +1,6 @@
 const std = @import("std");
 const log = std.log.default;
+const build_options = @import("build_options");
 const c = @import("c.zig");
 const m = @import("zlm");
 
@@ -13,7 +14,6 @@ const EntityManager = @import("entity_manager.zig").EntityManager;
 const SystemManager = @import("system_manager.zig").SystemManager;
 const systemList = @import("systems.zig").systemList;
 
-pub const programName = "mega_entity" ++ if (std.builtin.mode == .Debug) "_debug" else "";
 pub const renderWidth = 1280;
 pub const renderHeight = 720;
 const targetFPS = 60;
@@ -30,7 +30,7 @@ pub fn main() anyerror!void {
 
     var systemManager = SystemManager.init(&systemList);
 
-    state.window = try Window.init(programName, renderWidth, renderHeight, targetFPS);
+    state.window = try Window.init(build_options.programName, renderWidth, renderHeight, targetFPS);
     defer state.window.deinit();
 
     state.renderer = try Renderer.init(&state.window);
