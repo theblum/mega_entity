@@ -25,6 +25,8 @@ pub fn main() anyerror!void {
     var state: State = undefined;
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
     state.entityManager = try EntityManager.init(&arena.allocator);
     defer state.entityManager.deinit();
 
