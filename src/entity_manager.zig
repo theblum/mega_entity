@@ -4,7 +4,7 @@ const log = std.log.scoped(.entityManager);
 const Entity = @import("entity.zig").Entity;
 const EntityFlags = @import("entity.zig").EntityFlags;
 
-pub const MAX_ENTITIES = 1024;
+pub const MAX_ENTITIES = 4096;
 
 pub const EntityHandle = struct {
     index: usize,

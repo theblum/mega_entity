@@ -31,8 +31,8 @@ pub const Renderer = struct {
         c.sfText_destroy(self.text);
     }
 
-    pub fn clearWindow(self: Self, color: u32) void {
-        c.sfRenderWindow_clear(self.window.handle, c.sfColor_fromInteger(color));
+    pub fn clearWindow(self: Self, color: m.Vec4) void {
+        c.sfRenderWindow_clear(self.window.handle, vec4ToSFMLColor(color));
     }
 
     pub fn displayWindow(self: Self) void {

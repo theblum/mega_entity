@@ -60,11 +60,12 @@ pub fn main() anyerror!void {
 
     var clock = try Clock.init();
     defer clock.deinit();
+
     while (state.window.isOpen()) {
         state.dt = clock.getSecondsAndRestart();
 
         state.window.pollEvents();
-        state.renderer.clearWindow(0x2288ddff);
+        state.renderer.clearWindow(m.vec4(0.2, 0.4, 0.6, 1.0));
 
         systemManager.tick(&state);
 
