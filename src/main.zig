@@ -1,11 +1,11 @@
 const std = @import("std");
 const log = std.log.default;
 const build_options = @import("build_options");
-const c = @import("c.zig");
 const m = @import("zlm");
 
 const platform = @import("platform.zig");
 const Window = platform.Window;
+const Input = platform.Input;
 const Clock = platform.Clock;
 const State = @import("state.zig").State;
 const Renderer = @import("renderer.zig").Renderer;
@@ -19,10 +19,10 @@ pub const renderHeight = 720;
 const targetFPS = 60;
 
 pub fn main() anyerror!void {
-    var prng = std.rand.DefaultPrng.init(@intCast(u64, std.time.milliTimestamp()));
-    const rand = &prng.random;
-
     var state: State = undefined;
+
+    var prng = std.rand.DefaultPrng.init(@intCast(u64, std.time.milliTimestamp()));
+    state.rand = &prng.random;
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
@@ -35,28 +35,10 @@ pub fn main() anyerror!void {
     state.window = try Window.init(build_options.programName, renderWidth, renderHeight, targetFPS);
     defer state.window.deinit();
 
+    state.input = Input.init();
+
     state.renderer = try Renderer.init(&state.window);
     defer state.renderer.deinit();
-
-    {
-        var i: usize = 0;
-        while (i < 10) : (i += 1) {
-            const mass = (rand.float(f32) * 20.0) + 10.0;
-            const radius = @sqrt(mass) * 5.0;
-
-            var moverHandle = try state.entityManager.createEntity(.{
-                .position = m.vec2(rand.float(f32) * state.window.width, rand.float(f32) * state.window.height),
-                .velocity = m.vec2(0.0, 0.0),
-                .acceleration = m.vec2(0.0, 0.0),
-                .mass = mass,
-                .radius = radius,
-                .color = m.vec4(0.6, 0.4, rand.float(f32), 0.8),
-            });
-
-            var moverPtr = try state.entityManager.getEntityPtr(moverHandle);
-            moverPtr.setFlags(&.{ .isRenderable, .hasPhysics });
-        }
-    }
 
     var clock = try Clock.init();
     defer clock.deinit();
@@ -64,19 +46,29 @@ pub fn main() anyerror!void {
     while (state.window.isOpen()) {
         state.dt = clock.getSecondsAndRestart();
 
-        state.window.pollEvents();
+        state.window.pollEvents(&state);
         state.renderer.clearWindow(m.vec4(0.2, 0.4, 0.6, 1.0));
 
         systemManager.tick(&state);
 
         if (std.builtin.mode == .Debug) {
-            // @Note: Text will be: "0.XXXX s/f"
-            var buffer: [11:0]u8 = undefined;
-            _ = try std.fmt.bufPrintZ(&buffer, "{d:.4} s/f", .{state.dt});
+            // @Note: "0.XXXX s/f"
+            var spfBuffer: [10:0]u8 = .{0} ** 10;
+            _ = try std.fmt.bufPrint(&spfBuffer, "{d:.4} s/f", .{state.dt});
 
             state.renderer.drawText(
-                &buffer,
+                &spfBuffer,
                 .{ .x = 10.0, .y = 10.0 },
+                .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 14 },
+            );
+
+            // @Note: "Entity Count: XXXX"
+            var countBuffer: [18:0]u8 = .{0} ** 18;
+            _ = try std.fmt.bufPrint(&countBuffer, "Entity Count: {d:0>4}", .{state.entityManager.entityCount});
+
+            state.renderer.drawText(
+                &countBuffer,
+                .{ .x = 10.0, .y = 25.0 },
                 .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 14 },
             );
         }

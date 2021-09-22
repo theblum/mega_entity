@@ -1,14 +1,18 @@
 const std = @import("std");
 const log = std.log.scoped(.platform);
 const c = @import("c.zig");
+const m = @import("zlm");
+
+const State = @import("state.zig").State;
 
 pub const Window = struct {
     const Self = @This();
 
     handle: *c.sfRenderWindow,
 
-    // @Note: Storing these as f32s makes calculations easier, but should we instead store as u32s and
-    // cast to f32s whenever needed?
+    // @Note: These store the size of the game window, not the actual window size (they may be different if the
+    // window has been resized). You can get the actual window size by calling `getActualSize()`. Storing these as
+    // f32s makes calculations easier, but should we instead store as u32s and cast to f32s whenever needed?
     width: f32,
     height: f32,
 
@@ -40,7 +44,8 @@ pub const Window = struct {
         ) orelse return error.WindowCreationFailed;
 
         c.sfRenderWindow_setVerticalSyncEnabled(result.handle, c.sfFalse);
-        c.sfRenderWindow_setFramerateLimit(result.handle, targetFPS);
+        if (targetFPS > 0)
+            c.sfRenderWindow_setFramerateLimit(result.handle, targetFPS);
 
         return result;
     }
@@ -53,18 +58,82 @@ pub const Window = struct {
         return c.sfRenderWindow_isOpen(self.handle) == c.sfTrue;
     }
 
-    pub fn pollEvents(self: Self) void {
+    pub fn getActualSize(self: Self) m.Vec2 {
+        var size = c.sfRenderWindow_getSize(self.handle);
+        return .{ .x = @intToFloat(f32, size.x), .y = @intToFloat(f32, size.y) };
+    }
+
+    pub fn pollEvents(self: Self, state: *State) void {
+        for (state.input.mouseButtons) |*button|
+            button.wasDown = button.isDown;
+
         var event: c.sfEvent = undefined;
         while (c.sfRenderWindow_pollEvent(self.handle, &event) == c.sfTrue) {
             switch (event.type) {
                 c.sfEvtClosed => c.sfRenderWindow_close(self.handle),
+
                 c.sfEvtKeyPressed => {
                     if (event.key.code == c.sfKeyEscape)
                         c.sfRenderWindow_close(self.handle);
                 },
+
+                c.sfEvtMouseButtonPressed, c.sfEvtMouseButtonReleased => {
+                    const pressed = if (event.type == c.sfEvtMouseButtonPressed) true else false;
+
+                    switch (event.mouseButton.button) {
+                        c.sfMouseLeft => state.input.setMouseButton(.left, pressed),
+                        c.sfMouseRight => state.input.setMouseButton(.right, pressed),
+                        c.sfMouseMiddle => state.input.setMouseButton(.middle, pressed),
+                        else => {},
+                    }
+                },
+
                 else => {},
             }
         }
+    }
+};
+
+const MouseButtons = enum {
+    const len = @typeInfo(@This()).Enum.fields.len;
+
+    left,
+    right,
+    middle,
+};
+
+const MouseItem = struct {
+    isDown: bool = false,
+    wasDown: bool = false,
+};
+
+pub const Input = struct {
+    const Self = @This();
+
+    mouseButtons: [MouseButtons.len]MouseItem = .{MouseItem{}} ** MouseButtons.len,
+
+    pub fn init() Self {
+        return .{};
+    }
+
+    pub fn getMouseButton(self: Self, button: MouseButtons) MouseItem {
+        return self.mouseButtons[@enumToInt(button)];
+    }
+
+    pub fn setMouseButton(self: *Self, button: MouseButtons, pressed: bool) void {
+        self.mouseButtons[@enumToInt(button)].isDown = pressed;
+    }
+
+    pub fn getMousePosition(self: Self, state: *State) m.Vec2 {
+        _ = self;
+        const position = c.sfMouse_getPositionRenderWindow(state.window.handle);
+        const windowSize = state.window.getActualSize();
+        const adjustedPosition = .{
+            .x = @intToFloat(f32, position.x) * state.window.width / windowSize.x,
+            .y = @intToFloat(f32, position.y) * state.window.height / windowSize.y,
+        };
+
+        return adjustedPosition;
     }
 };
 

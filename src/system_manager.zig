@@ -17,11 +17,8 @@ pub const SystemManager = struct {
     }
 
     pub fn tick(self: Self, state: *State) void {
-        var iterator = state.entityManager.iterator();
         for (self.systems) |system| {
-            while (iterator.next(system.flags)) |item| {
-                system.tickFn(&item.entity.?, item.handle, state);
-            }
+            system.tickFn(state);
         }
     }
 };

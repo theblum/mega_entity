@@ -3,7 +3,7 @@ const log = std.log.scoped(.entity);
 const m = @import("zlm");
 
 pub const EntityFlags = enum {
-    const len = @typeInfo(EntityFlags).Enum.fields.len;
+    const len = @typeInfo(@This()).Enum.fields.len;
 
     isAlive,
     isRenderable,
