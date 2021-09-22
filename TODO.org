@@ -1,7 +1,10 @@
 #+TITLE: Todo List
 
 * TODO Current Tasks [1/5]
-+ [ ] Profiler
++ [-] Profiler [1/3]
+  - [X] Basic profiling
+  - [ ] Only print on button press
+  - [ ] Average over # of frames
 + [X] Mouse input
 + [ ] Keyboard input
 + [ ] Textures

@@ -6,6 +6,7 @@ const Window = platform.Window;
 const Input = platform.Input;
 const Renderer = @import("renderer.zig").Renderer;
 const EntityManager = @import("entity_manager.zig").EntityManager;
+const Profiler = @import("profiler.zig").Profiler;
 
 pub const State = struct {
     entityManager: EntityManager,
@@ -16,4 +17,6 @@ pub const State = struct {
     window: Window,
     input: Input,
     renderer: Renderer,
+
+    profiler: Profiler,
 };

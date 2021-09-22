@@ -5,6 +5,8 @@ const m = @import("zlm");
 const State = @import("../state.zig").State;
 
 pub fn tick(state: *State) void {
+    state.profiler.start("Spawner System");
+
     const button = state.input.getMouseButton(.left);
     if (!button.wasDown and button.isDown) {
         const position = state.input.getMousePosition(state);
@@ -26,4 +28,6 @@ pub fn tick(state: *State) void {
         var moverPtr = state.entityManager.getEntityPtr(moverHandle) catch unreachable;
         moverPtr.setFlags(&.{ .isRenderable, .hasPhysics });
     }
+
+    state.profiler.end();
 }

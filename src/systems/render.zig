@@ -8,6 +8,8 @@ const State = @import("../state.zig").State;
 pub const flags = [_]EntityFlags{.isRenderable};
 
 pub fn tick(state: *State) void {
+    state.profiler.start("Render System");
+
     var iterator = state.entityManager.iterator();
     while (iterator.next(&flags)) |item| {
         var entity = item.entity.?;
@@ -17,4 +19,6 @@ pub fn tick(state: *State) void {
             .outlineColor = m.vec4(0.1, 0.1, 0.1, 1.0),
         });
     }
+
+    state.profiler.end();
 }

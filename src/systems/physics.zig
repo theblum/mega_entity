@@ -9,6 +9,8 @@ const State = @import("../state.zig").State;
 pub const flags = [_]EntityFlags{.hasPhysics};
 
 pub fn tick(state: *State) void {
+    state.profiler.start("Physics System");
+
     var iterator = state.entityManager.iterator();
     while (iterator.next(&flags)) |item| {
         var entity = &item.entity.?;
@@ -47,6 +49,8 @@ pub fn tick(state: *State) void {
             entity.velocity.y *= -1.0;
         }
     }
+
+    state.profiler.end();
 }
 
 fn applyForce(entity: *Entity, force: m.Vec2) void {
