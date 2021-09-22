@@ -1,7 +1,6 @@
 const std = @import("std");
 const log = std.log.scoped("systemManager");
 
-const Entity = @import("entity.zig").Entity;
 const State = @import("state.zig").State;
 const SystemItem = @import("systems.zig").SystemItem;
 

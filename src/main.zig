@@ -3,7 +3,9 @@ const log = std.log.default;
 const build_options = @import("build_options");
 const m = @import("zlm");
 
+const system = @import("systems.zig");
 const platform = @import("platform.zig");
+
 const Window = platform.Window;
 const Input = platform.Input;
 const Clock = platform.Clock;
@@ -12,7 +14,6 @@ const Renderer = @import("renderer.zig").Renderer;
 
 const EntityManager = @import("entity_manager.zig").EntityManager;
 const SystemManager = @import("system_manager.zig").SystemManager;
-const systemList = @import("systems.zig").systemList;
 
 pub const renderWidth = 1280;
 pub const renderHeight = 720;
@@ -30,7 +31,7 @@ pub fn main() anyerror!void {
     state.entityManager = try EntityManager.init(&arena.allocator);
     defer state.entityManager.deinit();
 
-    var systemManager = SystemManager.init(&systemList);
+    var systemManager = SystemManager.init(&system.list);
 
     state.window = try Window.init(build_options.programName, renderWidth, renderHeight, targetFPS);
     defer state.window.deinit();

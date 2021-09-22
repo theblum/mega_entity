@@ -11,7 +11,7 @@ pub const SystemItem = struct {
     tickFn: fn (*State) void,
 };
 
-pub const systemList = [_]SystemItem{
+pub const list = [_]SystemItem{
     .{ .tickFn = spawner.tick },
     .{ .tickFn = physics.tick },
     .{ .tickFn = render.tick },
