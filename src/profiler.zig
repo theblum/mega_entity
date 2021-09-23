@@ -1,5 +1,8 @@
 const std = @import("std");
 const log = std.log.scoped(.profiler);
+const m = @import("zlm");
+
+const Renderer = @import("renderer.zig").Renderer;
 
 const Frame = struct {
     label: []const u8,
@@ -67,8 +70,8 @@ pub const Profiler = struct {
         self.currentLevel = 0;
     }
 
-    pub fn print(self: Self) void {
-        for (self.frames[0..self.frameCount]) |frame| {
+    pub fn draw(self: Self, renderer: Renderer) void {
+        for (self.frames[0..self.frameCount]) |frame, i| {
             if (!frame.ended) {
                 log.err("frame '{s}' never ended...skipping", .{frame.label});
                 continue;
@@ -80,12 +83,24 @@ pub const Profiler = struct {
             const numSpaces = frame.level * 2;
             const numDots = dots.len - frame.label.len - numSpaces;
 
-            log.info(
+            const elapsedMillis = @intToFloat(f64, frame.end - frame.start) / std.time.ns_per_ms;
+
+            const template = "LABEL ......................... XX.XXXms";
+            var buffer: [template.len:0]u8 = .{0} ** template.len;
+            _ = std.fmt.bufPrint(
+                &buffer,
                 "{s}{s} {s}{d: >7.3}ms",
-                .{ spaces[0..numSpaces], frame.label, dots[0..numDots], @intToFloat(f64, frame.end - frame.start) / std.time.ns_per_ms },
+                .{ spaces[0..numSpaces], frame.label, dots[0..numDots], elapsedMillis },
+            ) catch {
+                log.err("buffer too short for frame '{s}'...skipping", .{frame.label});
+                continue;
+            };
+
+            renderer.drawText(
+                &buffer,
+                .{ .x = 10.0, .y = 40.0 + (20.0 * @intToFloat(f32, i)) },
+                .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 14 },
             );
         }
-
-        log.info("----------------------------------------\n", .{});
     }
 };

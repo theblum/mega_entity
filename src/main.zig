@@ -49,41 +49,34 @@ pub fn main() anyerror!void {
     defer clock.deinit();
 
     while (state.window.isOpen()) {
-        state.profiler.start("Entire Frame");
-
         state.dt = clock.getSecondsAndRestart();
 
-        state.window.pollEvents(&state);
         state.renderer.clearWindow(m.vec4(0.2, 0.4, 0.6, 1.0));
+        state.profiler.draw(state.renderer);
+        state.profiler.reset();
+
+        state.profiler.start("Entire Frame");
+
+        state.window.pollEvents(&state);
 
         state.profiler.start("Run Systems");
         systemManager.tick(&state);
         state.profiler.end();
 
         if (std.builtin.mode == .Debug) {
-            state.profiler.start("Render Debug Text");
-
-            // @Note: "0.XXXX s/f"
-            var spfBuffer: [10:0]u8 = .{0} ** 10;
-            _ = try std.fmt.bufPrint(&spfBuffer, "{d:.4} s/f", .{state.dt});
+            const template = "dt: 0.XXXX s/f, ec: XXXX";
+            var buffer: [template.len:0]u8 = .{0} ** template.len;
+            _ = try std.fmt.bufPrint(
+                &buffer,
+                "dt: {d:.4} s/f, ec: {d:0>4}",
+                .{ state.dt, state.entityManager.entityCount },
+            );
 
             state.renderer.drawText(
-                &spfBuffer,
+                &buffer,
                 .{ .x = 10.0, .y = 10.0 },
                 .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 14 },
             );
-
-            // @Note: "Entity Count: XXXX"
-            var countBuffer: [18:0]u8 = .{0} ** 18;
-            _ = try std.fmt.bufPrint(&countBuffer, "Entity Count: {d:0>4}", .{state.entityManager.entityCount});
-
-            state.renderer.drawText(
-                &countBuffer,
-                .{ .x = 10.0, .y = 25.0 },
-                .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 14 },
-            );
-
-            state.profiler.end();
         }
 
         state.profiler.start("Swap Buffers");
@@ -91,8 +84,5 @@ pub fn main() anyerror!void {
         state.profiler.end();
 
         state.profiler.end();
-
-        state.profiler.print();
-        state.profiler.reset();
     }
 }
