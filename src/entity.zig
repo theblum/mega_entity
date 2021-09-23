@@ -8,6 +8,7 @@ pub const EntityFlags = enum {
     isAlive,
     isRenderable,
     hasPhysics,
+    isControllable,
 };
 
 pub const Entity = struct {

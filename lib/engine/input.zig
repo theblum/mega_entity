@@ -9,17 +9,16 @@ pub const Input = struct {
     const Self = @This();
 
     mouseButtons: [MouseButtons.len]MouseItem = .{MouseItem{}} ** MouseButtons.len,
+    keys: [Keys.len]KeyItem = .{KeyItem{}} ** Keys.len,
     window: *Window,
 
-    const MouseButtons = enum {
-        const len = @typeInfo(@This()).Enum.fields.len;
-
-        left,
-        right,
-        middle,
+    // @Note: Should these structs just be one `Item` struct?
+    const MouseItem = struct {
+        isDown: bool = false,
+        wasDown: bool = false,
     };
 
-    const MouseItem = struct {
+    const KeyItem = struct {
         isDown: bool = false,
         wasDown: bool = false,
     };
@@ -46,4 +45,51 @@ pub const Input = struct {
 
         return adjustedPosition;
     }
+
+    pub fn getKey(self: Self, key: Keys) KeyItem {
+        return self.keys[@enumToInt(key)];
+    }
+
+    pub fn setKey(self: *Self, key: Keys, pressed: bool) void {
+        self.keys[@enumToInt(key)].isDown = pressed;
+    }
+
+    pub const MouseButtons = enum {
+        const len = @typeInfo(@This()).Enum.fields.len;
+
+        left,
+        right,
+        middle,
+    };
+
+    pub const Keys = enum {
+        const len = @typeInfo(@This()).Enum.fields.len;
+
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
+        p,
+        q,
+        r,
+        s,
+        t,
+        u,
+        v,
+        w,
+        x,
+        y,
+        z,
+    };
 };

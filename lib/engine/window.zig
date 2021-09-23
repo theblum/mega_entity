@@ -48,6 +48,8 @@ pub const Window = struct {
         if (targetFPS > 0)
             c.sfRenderWindow_setFramerateLimit(result.handle, targetFPS);
 
+        c.sfRenderWindow_setKeyRepeatEnabled(result.handle, c.sfFalse);
+
         return result;
     }
 
@@ -72,15 +74,13 @@ pub const Window = struct {
         for (self.input.mouseButtons) |*button|
             button.wasDown = button.isDown;
 
+        for (self.input.keys) |*key|
+            key.wasDown = key.isDown;
+
         var event: c.sfEvent = undefined;
         while (c.sfRenderWindow_pollEvent(self.handle, &event) == c.sfTrue) {
             switch (event.type) {
                 c.sfEvtClosed => c.sfRenderWindow_close(self.handle),
-
-                c.sfEvtKeyPressed => {
-                    if (event.key.code == c.sfKeyEscape)
-                        c.sfRenderWindow_close(self.handle);
-                },
 
                 c.sfEvtMouseButtonPressed, c.sfEvtMouseButtonReleased => {
                     const pressed = if (event.type == c.sfEvtMouseButtonPressed) true else false;
@@ -89,6 +89,44 @@ pub const Window = struct {
                         c.sfMouseLeft => self.input.setMouseButton(.left, pressed),
                         c.sfMouseRight => self.input.setMouseButton(.right, pressed),
                         c.sfMouseMiddle => self.input.setMouseButton(.middle, pressed),
+                        else => {},
+                    }
+                },
+
+                c.sfEvtKeyPressed, c.sfEvtKeyReleased => {
+                    if (event.key.code == c.sfKeyEscape)
+                        c.sfRenderWindow_close(self.handle);
+
+                    const pressed = if (event.type == c.sfEvtKeyPressed) true else false;
+                    _ = pressed;
+
+                    switch (event.key.code) {
+                        c.sfKeyA => self.input.setKey(.a, pressed),
+                        c.sfKeyB => self.input.setKey(.b, pressed),
+                        c.sfKeyC => self.input.setKey(.c, pressed),
+                        c.sfKeyD => self.input.setKey(.d, pressed),
+                        c.sfKeyE => self.input.setKey(.e, pressed),
+                        c.sfKeyF => self.input.setKey(.f, pressed),
+                        c.sfKeyG => self.input.setKey(.g, pressed),
+                        c.sfKeyH => self.input.setKey(.h, pressed),
+                        c.sfKeyI => self.input.setKey(.i, pressed),
+                        c.sfKeyJ => self.input.setKey(.j, pressed),
+                        c.sfKeyK => self.input.setKey(.k, pressed),
+                        c.sfKeyL => self.input.setKey(.l, pressed),
+                        c.sfKeyM => self.input.setKey(.m, pressed),
+                        c.sfKeyN => self.input.setKey(.n, pressed),
+                        c.sfKeyO => self.input.setKey(.o, pressed),
+                        c.sfKeyP => self.input.setKey(.p, pressed),
+                        c.sfKeyQ => self.input.setKey(.q, pressed),
+                        c.sfKeyR => self.input.setKey(.r, pressed),
+                        c.sfKeyS => self.input.setKey(.s, pressed),
+                        c.sfKeyT => self.input.setKey(.t, pressed),
+                        c.sfKeyU => self.input.setKey(.u, pressed),
+                        c.sfKeyV => self.input.setKey(.v, pressed),
+                        c.sfKeyW => self.input.setKey(.w, pressed),
+                        c.sfKeyX => self.input.setKey(.x, pressed),
+                        c.sfKeyY => self.input.setKey(.y, pressed),
+                        c.sfKeyZ => self.input.setKey(.z, pressed),
                         else => {},
                     }
                 },

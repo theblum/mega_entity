@@ -46,9 +46,16 @@ pub fn main() anyerror!void {
 
     globals.profiler = Profiler{};
 
+    var playerHandle = try globals.entityManager.createEntity(.{
+        .position = m.vec2(500.0, 500.0),
+        .radius = 15.0,
+        .color = m.vec4(0.8, 0.7, 0.6, 1.0),
+    });
+
+    (try globals.entityManager.getEntityPtr(playerHandle)).setFlags(&.{ .isRenderable, .isControllable });
+
     var clock = try Clock.init();
     defer clock.deinit();
-
     while (globals.window.isOpen()) {
         state.dt = clock.getSecondsAndRestart();
 
