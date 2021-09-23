@@ -2,6 +2,8 @@ const std = @import("std");
 const log = std.log.scoped(.physicsSystem);
 const m = @import("zlm");
 
+const globals = &@import("../globals.zig").globals;
+
 const Entity = @import("../entity.zig").Entity;
 const EntityFlags = @import("../entity.zig").EntityFlags;
 const State = @import("../state.zig").State;
@@ -9,9 +11,9 @@ const State = @import("../state.zig").State;
 pub const flags = [_]EntityFlags{.hasPhysics};
 
 pub fn tick(state: *State) void {
-    state.profiler.start("Physics System");
+    globals.profiler.start("Physics System");
 
-    var iterator = state.entityManager.iterator();
+    var iterator = globals.entityManager.iterator();
     while (iterator.next(&flags)) |item| {
         var entity = &item.entity.?;
 
@@ -25,7 +27,7 @@ pub fn tick(state: *State) void {
         drag = drag.scale(entity.velocity.length2() * dragCoef);
         applyForce(entity, drag);
 
-        if (state.window.height - (entity.position.y + entity.radius) < 1.0) {
+        if (globals.window.height - (entity.position.y + entity.radius) < 1.0) {
             var friction = entity.velocity.normalize().scale(-1.0);
             const frictionCoef = 50.0;
             friction = friction.scale(frictionCoef);
@@ -36,21 +38,21 @@ pub fn tick(state: *State) void {
         entity.position = entity.position.add(entity.velocity.scale(state.dt));
         entity.acceleration = entity.acceleration.scale(0.0);
 
-        if (entity.position.x > state.window.width - entity.radius) {
-            entity.position.x = state.window.width - entity.radius;
+        if (entity.position.x > globals.window.width - entity.radius) {
+            entity.position.x = globals.window.width - entity.radius;
             entity.velocity.x *= -1.0;
         } else if (entity.position.x < 0 + entity.radius) {
             entity.position.x = entity.radius;
             entity.velocity.x *= -1.0;
         }
 
-        if (entity.position.y > state.window.height - entity.radius) {
-            entity.position.y = state.window.height - entity.radius;
+        if (entity.position.y > globals.window.height - entity.radius) {
+            entity.position.y = globals.window.height - entity.radius;
             entity.velocity.y *= -1.0;
         }
     }
 
-    state.profiler.end();
+    globals.profiler.end();
 }
 
 fn applyForce(entity: *Entity, force: m.Vec2) void {

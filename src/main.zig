@@ -3,6 +3,8 @@ const log = std.log.default;
 const build_options = @import("build_options");
 const m = @import("zlm");
 
+const globals = &@import("globals.zig").globals;
+
 const system = @import("systems.zig");
 const platform = @import("platform.zig");
 
@@ -25,43 +27,43 @@ pub fn main() anyerror!void {
     var state: State = undefined;
 
     var prng = std.rand.DefaultPrng.init(@intCast(u64, std.time.milliTimestamp()));
-    state.rand = &prng.random;
+    globals.rand = &prng.random;
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
 
-    state.entityManager = try EntityManager.init(&arena.allocator);
-    defer state.entityManager.deinit();
+    globals.entityManager = try EntityManager.init(&arena.allocator);
+    defer globals.entityManager.deinit();
 
-    var systemManager = SystemManager.init(&system.list);
+    globals.systemManager = SystemManager.init(&system.list);
 
-    state.window = try Window.init(build_options.programName, renderWidth, renderHeight, targetFPS);
-    defer state.window.deinit();
+    globals.window = try Window.init(build_options.programName, renderWidth, renderHeight, targetFPS);
+    defer globals.window.deinit();
 
-    state.input = Input.init();
+    globals.input = Input.init();
 
-    state.renderer = try Renderer.init(&state.window);
-    defer state.renderer.deinit();
+    globals.renderer = try Renderer.init(&globals.window);
+    defer globals.renderer.deinit();
 
-    state.profiler = Profiler{};
+    globals.profiler = Profiler{};
 
     var clock = try Clock.init();
     defer clock.deinit();
 
-    while (state.window.isOpen()) {
+    while (globals.window.isOpen()) {
         state.dt = clock.getSecondsAndRestart();
 
-        state.renderer.clearWindow(m.vec4(0.2, 0.4, 0.6, 1.0));
-        state.profiler.draw(state.renderer);
-        state.profiler.reset();
+        globals.renderer.clearWindow(m.vec4(0.2, 0.4, 0.6, 1.0));
+        globals.profiler.draw();
+        globals.profiler.reset();
 
-        state.profiler.start("Entire Frame");
+        globals.profiler.start("Entire Frame");
 
-        state.window.pollEvents(&state);
+        globals.window.pollEvents();
 
-        state.profiler.start("Run Systems");
-        systemManager.tick(&state);
-        state.profiler.end();
+        globals.profiler.start("Run Systems");
+        globals.systemManager.tick(&state);
+        globals.profiler.end();
 
         if (std.builtin.mode == .Debug) {
             const template = "dt: 0.XXXX s/f, ec: XXXX";
@@ -69,20 +71,20 @@ pub fn main() anyerror!void {
             _ = try std.fmt.bufPrint(
                 &buffer,
                 "dt: {d:.4} s/f, ec: {d:0>4}",
-                .{ state.dt, state.entityManager.entityCount },
+                .{ state.dt, globals.entityManager.entityCount },
             );
 
-            state.renderer.drawText(
+            globals.renderer.drawText(
                 &buffer,
                 .{ .x = 10.0, .y = 10.0 },
                 .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 14 },
             );
         }
 
-        state.profiler.start("Swap Buffers");
-        state.renderer.displayWindow();
-        state.profiler.end();
+        globals.profiler.start("Swap Buffers");
+        globals.renderer.displayWindow();
+        globals.profiler.end();
 
-        state.profiler.end();
+        globals.profiler.end();
     }
 }

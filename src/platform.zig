@@ -3,7 +3,7 @@ const log = std.log.scoped(.platform);
 const c = @import("c.zig");
 const m = @import("zlm");
 
-const State = @import("state.zig").State;
+const globals = &@import("globals.zig").globals;
 
 pub const Window = struct {
     const Self = @This();
@@ -63,8 +63,8 @@ pub const Window = struct {
         return .{ .x = @intToFloat(f32, size.x), .y = @intToFloat(f32, size.y) };
     }
 
-    pub fn pollEvents(self: Self, state: *State) void {
-        for (state.input.mouseButtons) |*button|
+    pub fn pollEvents(self: Self) void {
+        for (globals.input.mouseButtons) |*button|
             button.wasDown = button.isDown;
 
         var event: c.sfEvent = undefined;
@@ -81,9 +81,9 @@ pub const Window = struct {
                     const pressed = if (event.type == c.sfEvtMouseButtonPressed) true else false;
 
                     switch (event.mouseButton.button) {
-                        c.sfMouseLeft => state.input.setMouseButton(.left, pressed),
-                        c.sfMouseRight => state.input.setMouseButton(.right, pressed),
-                        c.sfMouseMiddle => state.input.setMouseButton(.middle, pressed),
+                        c.sfMouseLeft => globals.input.setMouseButton(.left, pressed),
+                        c.sfMouseRight => globals.input.setMouseButton(.right, pressed),
+                        c.sfMouseMiddle => globals.input.setMouseButton(.middle, pressed),
                         else => {},
                     }
                 },
@@ -124,13 +124,13 @@ pub const Input = struct {
         self.mouseButtons[@enumToInt(button)].isDown = pressed;
     }
 
-    pub fn getMousePosition(self: Self, state: *State) m.Vec2 {
+    pub fn getMousePosition(self: Self) m.Vec2 {
         _ = self;
-        const position = c.sfMouse_getPositionRenderWindow(state.window.handle);
-        const windowSize = state.window.getActualSize();
+        const position = c.sfMouse_getPositionRenderWindow(globals.window.handle);
+        const windowSize = globals.window.getActualSize();
         const adjustedPosition = .{
-            .x = @intToFloat(f32, position.x) * state.window.width / windowSize.x,
-            .y = @intToFloat(f32, position.y) * state.window.height / windowSize.y,
+            .x = @intToFloat(f32, position.x) * globals.window.width / windowSize.x,
+            .y = @intToFloat(f32, position.y) * globals.window.height / windowSize.y,
         };
 
         return adjustedPosition;

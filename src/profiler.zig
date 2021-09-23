@@ -2,7 +2,7 @@ const std = @import("std");
 const log = std.log.scoped(.profiler);
 const m = @import("zlm");
 
-const Renderer = @import("renderer.zig").Renderer;
+const globals = &@import("globals.zig").globals;
 
 const Frame = struct {
     label: []const u8,
@@ -70,7 +70,7 @@ pub const Profiler = struct {
         self.currentLevel = 0;
     }
 
-    pub fn draw(self: Self, renderer: Renderer) void {
+    pub fn draw(self: Self) void {
         for (self.frames[0..self.frameCount]) |frame, i| {
             if (!frame.ended) {
                 log.err("frame '{s}' never ended...skipping", .{frame.label});
@@ -96,7 +96,7 @@ pub const Profiler = struct {
                 continue;
             };
 
-            renderer.drawText(
+            globals.renderer.drawText(
                 &buffer,
                 .{ .x = 10.0, .y = 40.0 + (20.0 * @intToFloat(f32, i)) },
                 .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 14 },
