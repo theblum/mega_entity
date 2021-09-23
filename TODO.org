@@ -1,11 +1,18 @@
 #+TITLE: Todo List
 
-* TODO Current Tasks [2/6]
+* TODO Current Tasks [3/7]
 + [-] Profiler [1/4]
   - [X] Basic profiling
   - [ ] Only print on button press
   - [ ] Average over # of frames
   - [ ] Only run profiler if built in developer mode
++ [X] Extract out engine code [6/6]
+  - [X] EntityManager
+  - [X] SystemManager
+  - [X] Renderer
+  - [X] Window
+  - [X] Input
+  - [X] Clock
 + [X] Use globals instead of state
 + [X] Mouse input
 + [ ] Keyboard input

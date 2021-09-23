@@ -11,9 +11,9 @@ pub fn tick(state: *State) void {
 
     globals.profiler.start("Spawner System");
 
-    const button = globals.input.getMouseButton(.left);
+    const button = globals.window.input.getMouseButton(.left);
     if (!button.wasDown and button.isDown) {
-        const position = globals.input.getMousePosition();
+        const position = globals.window.input.getMousePosition();
         const mass = (globals.rand.float(f32) * 20.0) + 10.0;
         const radius = @sqrt(mass) * 5.0;
 

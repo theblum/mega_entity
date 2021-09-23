@@ -4,18 +4,18 @@ const build_options = @import("build_options");
 const m = @import("zlm");
 
 const globals = &@import("globals.zig").globals;
+const systems = @import("systems.zig");
 
-const system = @import("systems.zig");
-const platform = @import("platform.zig");
-
-const Window = platform.Window;
-const Input = platform.Input;
-const Clock = platform.Clock;
 const State = @import("state.zig").State;
-const Renderer = @import("renderer.zig").Renderer;
+const Entity = @import("entity.zig").Entity;
+const EntityFlags = @import("entity.zig").EntityFlags;
+const SystemItem = @import("systems.zig").SystemItem;
 
-const EntityManager = @import("entity_manager.zig").EntityManager;
-const SystemManager = @import("system_manager.zig").SystemManager;
+const Window = @import("engine").Window;
+const Clock = @import("engine").Clock;
+const Renderer = @import("engine").Renderer;
+const EntityManager = @import("engine").EntityManager(Entity, EntityFlags);
+const SystemManager = @import("engine").SystemManager(SystemItem, State);
 
 const Profiler = @import("profiler.zig").Profiler;
 
@@ -35,12 +35,11 @@ pub fn main() anyerror!void {
     globals.entityManager = try EntityManager.init(&arena.allocator);
     defer globals.entityManager.deinit();
 
-    globals.systemManager = SystemManager.init(&system.list);
+    globals.systemManager = SystemManager.init(&systems.list);
 
     globals.window = try Window.init(build_options.programName, renderWidth, renderHeight, targetFPS);
     defer globals.window.deinit();
-
-    globals.input = Input.init();
+    globals.window.addInput();
 
     globals.renderer = try Renderer.init(&globals.window);
     defer globals.renderer.deinit();

@@ -1,12 +1,16 @@
 const std = @import("std");
 const log = std.log.scoped(.globals);
 
-const platform = @import("platform.zig");
-const Window = platform.Window;
-const Input = platform.Input;
-const Renderer = @import("renderer.zig").Renderer;
-const EntityManager = @import("entity_manager.zig").EntityManager;
-const SystemManager = @import("system_manager.zig").SystemManager;
+const State = @import("state.zig").State;
+const Entity = @import("entity.zig").Entity;
+const EntityFlags = @import("entity.zig").EntityFlags;
+const SystemItem = @import("systems.zig").SystemItem;
+
+const Window = @import("engine").Window;
+const Renderer = @import("engine").Renderer;
+const EntityManager = @import("engine").EntityManager(Entity, EntityFlags);
+const SystemManager = @import("engine").SystemManager(SystemItem, State);
+
 const Profiler = @import("profiler.zig").Profiler;
 
 const Globals = struct {
@@ -16,7 +20,6 @@ const Globals = struct {
     systemManager: SystemManager,
 
     window: Window,
-    input: Input,
     renderer: Renderer,
 
     profiler: Profiler,

@@ -3,8 +3,7 @@ const log = std.log.scoped(.renderer);
 const c = @import("c.zig");
 const m = @import("zlm");
 
-const platform = @import("platform.zig");
-const Window = platform.Window;
+const Window = @import("window.zig").Window;
 
 pub const Renderer = struct {
     const Self = @This();

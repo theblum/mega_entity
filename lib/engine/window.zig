@@ -1,14 +1,15 @@
 const std = @import("std");
-const log = std.log.scoped(.platform);
+const log = std.log.scoped(.window);
 const c = @import("c.zig");
 const m = @import("zlm");
 
-const globals = &@import("globals.zig").globals;
+const Input = @import("input.zig").Input;
 
 pub const Window = struct {
     const Self = @This();
 
     handle: *c.sfRenderWindow,
+    input: Input = undefined,
 
     // @Note: These store the size of the game window, not the actual window size (they may be different if the
     // window has been resized). You can get the actual window size by calling `getActualSize()`. Storing these as
@@ -54,6 +55,10 @@ pub const Window = struct {
         c.sfRenderWindow_destroy(self.handle);
     }
 
+    pub fn addInput(self: *Self) void {
+        self.input = Input.init(self);
+    }
+
     pub fn isOpen(self: Self) bool {
         return c.sfRenderWindow_isOpen(self.handle) == c.sfTrue;
     }
@@ -63,8 +68,8 @@ pub const Window = struct {
         return .{ .x = @intToFloat(f32, size.x), .y = @intToFloat(f32, size.y) };
     }
 
-    pub fn pollEvents(self: Self) void {
-        for (globals.input.mouseButtons) |*button|
+    pub fn pollEvents(self: *Self) void {
+        for (self.input.mouseButtons) |*button|
             button.wasDown = button.isDown;
 
         var event: c.sfEvent = undefined;
@@ -81,9 +86,9 @@ pub const Window = struct {
                     const pressed = if (event.type == c.sfEvtMouseButtonPressed) true else false;
 
                     switch (event.mouseButton.button) {
-                        c.sfMouseLeft => globals.input.setMouseButton(.left, pressed),
-                        c.sfMouseRight => globals.input.setMouseButton(.right, pressed),
-                        c.sfMouseMiddle => globals.input.setMouseButton(.middle, pressed),
+                        c.sfMouseLeft => self.input.setMouseButton(.left, pressed),
+                        c.sfMouseRight => self.input.setMouseButton(.right, pressed),
+                        c.sfMouseMiddle => self.input.setMouseButton(.middle, pressed),
                         else => {},
                     }
                 },
@@ -91,70 +96,5 @@ pub const Window = struct {
                 else => {},
             }
         }
-    }
-};
-
-const MouseButtons = enum {
-    const len = @typeInfo(@This()).Enum.fields.len;
-
-    left,
-    right,
-    middle,
-};
-
-const MouseItem = struct {
-    isDown: bool = false,
-    wasDown: bool = false,
-};
-
-pub const Input = struct {
-    const Self = @This();
-
-    mouseButtons: [MouseButtons.len]MouseItem = .{MouseItem{}} ** MouseButtons.len,
-
-    pub fn init() Self {
-        return .{};
-    }
-
-    pub fn getMouseButton(self: Self, button: MouseButtons) MouseItem {
-        return self.mouseButtons[@enumToInt(button)];
-    }
-
-    pub fn setMouseButton(self: *Self, button: MouseButtons, pressed: bool) void {
-        self.mouseButtons[@enumToInt(button)].isDown = pressed;
-    }
-
-    pub fn getMousePosition(self: Self) m.Vec2 {
-        _ = self;
-        const position = c.sfMouse_getPositionRenderWindow(globals.window.handle);
-        const windowSize = globals.window.getActualSize();
-        const adjustedPosition = .{
-            .x = @intToFloat(f32, position.x) * globals.window.width / windowSize.x,
-            .y = @intToFloat(f32, position.y) * globals.window.height / windowSize.y,
-        };
-
-        return adjustedPosition;
-    }
-};
-
-pub const Clock = struct {
-    const Self = @This();
-
-    handle: *c.sfClock,
-
-    pub fn init() !Self {
-        var result = .{
-            .handle = c.sfClock_create() orelse return error.LoadingError,
-        };
-
-        return result;
-    }
-
-    pub fn deinit(self: Self) void {
-        c.sfClock_destroy(self.handle);
-    }
-
-    pub fn getSecondsAndRestart(self: Self) f32 {
-        return c.sfTime_asSeconds(c.sfClock_restart(self.handle));
     }
 };
