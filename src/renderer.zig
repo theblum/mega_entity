@@ -47,11 +47,8 @@ pub const Renderer = struct {
 
     pub fn drawCircle(self: Self, position: m.Vec2, radius: f32, options: CircleOptions) void {
         // @Note: SFML sets the position to the top-left of the circle. This moves the position to the center.
-        c.sfCircleShape_setPosition(self.circle, .{
-            .x = position.x - radius,
-            .y = position.y - radius,
-        });
-
+        c.sfCircleShape_setPosition(self.circle, .{ .x = position.x, .y = position.y });
+        c.sfCircleShape_setOrigin(self.circle, .{ .x = radius, .y = radius });
         c.sfCircleShape_setRadius(self.circle, radius);
         c.sfCircleShape_setFillColor(self.circle, vec4ToSFMLColor(options.color));
 
