@@ -54,6 +54,7 @@ pub fn main() anyerror!void {
     var playerHandle = try globals.entityManager.createEntity(.{
         .renderType = .rectangle,
         .position = m.vec2(globals.window.size.x * 0.5, globals.window.size.y * 0.5),
+        .rotation = 0.0,
         .size = m.vec2(20.0, 40.0),
         .color = m.vec4(0.8, 0.7, 0.6, 1.0),
     });
