@@ -17,7 +17,15 @@ pub const Window = struct {
     width: f32,
     height: f32,
 
-    pub fn init(programName: [:0]const u8, width: u32, height: u32, targetFPS: u32) !Self {
+    const WindowOptions = struct {
+        vsync: bool = false,
+        targetFPS: u32 = 0,
+        keyRepeat: bool = true,
+        mouseVisible: bool = true,
+        mouseGrabbed: bool = false,
+    };
+
+    pub fn init(programName: [:0]const u8, width: u32, height: u32, options: WindowOptions) !Self {
         var result: Window = undefined;
         result.width = @intToFloat(f32, width);
         result.height = @intToFloat(f32, height);
@@ -44,11 +52,11 @@ pub const Window = struct {
             &settings,
         ) orelse return error.WindowCreationFailed;
 
-        c.sfRenderWindow_setVerticalSyncEnabled(result.handle, c.sfFalse);
-        if (targetFPS > 0)
-            c.sfRenderWindow_setFramerateLimit(result.handle, targetFPS);
-
-        c.sfRenderWindow_setKeyRepeatEnabled(result.handle, c.sfFalse);
+        c.sfRenderWindow_setVerticalSyncEnabled(result.handle, if (options.vsync) c.sfTrue else c.sfFalse);
+        c.sfRenderWindow_setFramerateLimit(result.handle, options.targetFPS);
+        c.sfRenderWindow_setKeyRepeatEnabled(result.handle, if (options.keyRepeat) c.sfTrue else c.sfFalse);
+        c.sfRenderWindow_setMouseCursorVisible(result.handle, if (options.mouseVisible) c.sfTrue else c.sfFalse);
+        c.sfRenderWindow_setMouseCursorGrabbed(result.handle, if (options.mouseGrabbed) c.sfTrue else c.sfFalse);
 
         return result;
     }

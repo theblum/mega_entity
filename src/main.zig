@@ -37,7 +37,12 @@ pub fn main() anyerror!void {
 
     globals.systemManager = SystemManager.init(&systems.list);
 
-    globals.window = try Window.init(build_options.programName, renderWidth, renderHeight, targetFPS);
+    globals.window = try Window.init(
+        build_options.programName,
+        renderWidth,
+        renderHeight,
+        .{ .targetFPS = targetFPS, .keyRepeat = false },
+    );
     defer globals.window.deinit();
     globals.window.addInput();
 
@@ -72,7 +77,7 @@ pub fn main() anyerror!void {
         globals.profiler.end();
 
         if (std.builtin.mode == .Debug) {
-            const template = "dt: 0.XXXX s/f, ec: XXXX";
+            const template = "dt: 0.XXXX s/f, ec: XXXX padding";
             var buffer: [template.len:0]u8 = .{0} ** template.len;
             _ = try std.fmt.bufPrint(
                 &buffer,
