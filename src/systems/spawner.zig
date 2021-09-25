@@ -18,9 +18,11 @@ pub fn tick(state: *State) void {
         const radius = @sqrt(mass) * 5.0;
 
         var moverHandle = globals.entityManager.createEntity(.{
+            .renderType = .circle,
             .position = position,
             .velocity = m.vec2(0.0, 0.0),
             .acceleration = m.vec2(0.0, 0.0),
+            .rotation = 0.0,
             .mass = mass,
             .radius = radius,
             .color = m.vec4(0.6, 0.4, globals.rand.float(f32), 0.8),

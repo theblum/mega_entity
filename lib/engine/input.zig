@@ -39,8 +39,8 @@ pub const Input = struct {
         const position = c.sfMouse_getPositionRenderWindow(self.window.handle);
         const windowSize = self.window.getActualSize();
         const adjustedPosition = .{
-            .x = @intToFloat(f32, position.x) * self.window.width / windowSize.x,
-            .y = @intToFloat(f32, position.y) * self.window.height / windowSize.y,
+            .x = @intToFloat(f32, position.x) * self.window.size.x / windowSize.x,
+            .y = @intToFloat(f32, position.y) * self.window.size.y / windowSize.y,
         };
 
         return adjustedPosition;

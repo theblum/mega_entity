@@ -52,8 +52,9 @@ pub fn main() anyerror!void {
     globals.profiler = Profiler{};
 
     var playerHandle = try globals.entityManager.createEntity(.{
-        .position = m.vec2(500.0, 500.0),
-        .radius = 15.0,
+        .renderType = .rectangle,
+        .position = m.vec2(globals.window.size.x * 0.5, globals.window.size.y * 0.5),
+        .size = m.vec2(20.0, 40.0),
         .color = m.vec4(0.8, 0.7, 0.6, 1.0),
     });
 

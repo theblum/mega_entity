@@ -27,7 +27,7 @@ pub fn tick(state: *State) void {
         drag = drag.scale(entity.velocity.length2() * dragCoef);
         applyForce(entity, drag);
 
-        if (globals.window.height - (entity.position.y + entity.radius) < 1.0) {
+        if (globals.window.size.y - (entity.position.y + entity.radius) < 1.0) {
             var friction = entity.velocity.normalize().scale(-1.0);
             const frictionCoef = 50.0;
             friction = friction.scale(frictionCoef);
@@ -38,16 +38,16 @@ pub fn tick(state: *State) void {
         entity.position = entity.position.add(entity.velocity.scale(state.dt));
         entity.acceleration = entity.acceleration.scale(0.0);
 
-        if (entity.position.x > globals.window.width - entity.radius) {
-            entity.position.x = globals.window.width - entity.radius;
+        if (entity.position.x > globals.window.size.x - entity.radius) {
+            entity.position.x = globals.window.size.x - entity.radius;
             entity.velocity.x *= -1.0;
         } else if (entity.position.x < 0 + entity.radius) {
             entity.position.x = entity.radius;
             entity.velocity.x *= -1.0;
         }
 
-        if (entity.position.y > globals.window.height - entity.radius) {
-            entity.position.y = globals.window.height - entity.radius;
+        if (entity.position.y > globals.window.size.y - entity.radius) {
+            entity.position.y = globals.window.size.y - entity.radius;
             entity.velocity.y *= -1.0;
         }
     }

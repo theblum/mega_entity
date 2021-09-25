@@ -18,5 +18,8 @@
 + [-] Keyboard input [1/2]
   - [X] Basic implementation
   - [ ] Add more keys
-+ [ ] Textures
++ [-] Rendering [1/3]
+  - [ ] Sprites
+  - [X] Rectangles
+  - [ ] Add layers
 + [ ] Chipmunk2D?

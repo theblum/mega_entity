@@ -14,8 +14,7 @@ pub const Window = struct {
     // @Note: These store the size of the game window, not the actual window size (they may be different if the
     // window has been resized). You can get the actual window size by calling `getActualSize()`. Storing these as
     // f32s makes calculations easier, but should we instead store as u32s and cast to f32s whenever needed?
-    width: f32,
-    height: f32,
+    size: m.Vec2,
 
     const WindowOptions = struct {
         vsync: bool = false,
@@ -27,8 +26,7 @@ pub const Window = struct {
 
     pub fn init(programName: [:0]const u8, width: u32, height: u32, options: WindowOptions) !Self {
         var result: Window = undefined;
-        result.width = @intToFloat(f32, width);
-        result.height = @intToFloat(f32, height);
+        result.size = m.vec2(@intToFloat(f32, width), @intToFloat(f32, height));
 
         // @Note: These are all just the default settings except for `antialiasingLevel`.
         // Also, as per the documentation: All these settings with the exception of the compatibility

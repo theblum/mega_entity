@@ -14,12 +14,23 @@ pub const EntityFlags = enum {
 pub const Entity = struct {
     flags: std.StaticBitSet(EntityFlags.len) = std.StaticBitSet(EntityFlags.len).initEmpty(),
 
+    renderType: RenderTypes = .none,
     position: m.Vec2 = undefined,
     velocity: m.Vec2 = undefined,
     acceleration: m.Vec2 = undefined,
+    rotation: f32 = undefined,
     mass: f32 = undefined,
+    size: m.Vec2 = undefined,
     radius: f32 = undefined,
     color: m.Vec4 = undefined,
+
+    pub const RenderTypes = enum {
+        none,
+        circle,
+        rectangle,
+        text,
+        sprite,
+    };
 
     pub usingnamespace FlagUtils(@This());
 };

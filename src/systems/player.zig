@@ -9,6 +9,8 @@ const State = @import("../state.zig").State;
 
 pub const flags = [_]EntityFlags{.isControllable};
 
+var time: f32 = 0.0;
+
 pub fn tick(state: *State) void {
     globals.profiler.start("Player System");
 
@@ -37,6 +39,9 @@ pub fn tick(state: *State) void {
 
         movement = movement.normalize();
         entity.position = entity.position.add(movement.scale(speed * state.dt));
+
+        time += state.dt;
+        entity.rotation = @sin(time * 5.0) * 180.0 / std.math.pi;
     }
 
     globals.profiler.end();
