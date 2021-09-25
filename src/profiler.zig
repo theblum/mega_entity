@@ -85,7 +85,7 @@ pub const Profiler = struct {
 
             const elapsedMillis = @intToFloat(f64, frame.end - frame.start) / std.time.ns_per_ms;
 
-            const template = "LABEL ......................... XX.XXXms";
+            const template = "LABEL ......................... XX.XXXms padding";
             var buffer: [template.len:0]u8 = .{0} ** template.len;
             _ = std.fmt.bufPrint(
                 &buffer,
