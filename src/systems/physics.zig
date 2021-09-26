@@ -8,7 +8,7 @@ const Entity = @import("../entity.zig").Entity;
 const EntityFlags = @import("../entity.zig").EntityFlags;
 const State = @import("../state.zig").State;
 
-pub const flags = [_]EntityFlags{.hasPhysics};
+const flags = [_]EntityFlags{.hasPhysics};
 
 pub fn tick(state: *State) void {
     globals.profiler.start("Physics System");
@@ -22,10 +22,15 @@ pub fn tick(state: *State) void {
         applyForce(entity, gravity.scale(entity.mass));
         applyForce(entity, wind);
 
-        var drag = entity.velocity.normalize().scale(-1.0);
-        const dragCoef = 0.05;
-        drag = drag.scale(entity.velocity.length2() * dragCoef);
-        applyForce(entity, drag);
+        var dragIter = globals.entityManager.iterator();
+        while (dragIter.next(&.{.hasDrag})) |dragItem| {
+            var dragEntity = &dragItem.entity.?;
+            if (circlesCollide(entity, dragEntity)) {
+                var drag = entity.velocity.normalize().scale(-1.0);
+                drag = drag.scale(entity.velocity.length2() * dragEntity.drag);
+                applyForce(entity, drag);
+            }
+        }
 
         if (globals.window.size.y - (entity.position.y + entity.radius) < 1.0) {
             var friction = entity.velocity.normalize().scale(-1.0);
@@ -40,15 +45,15 @@ pub fn tick(state: *State) void {
 
         if (entity.position.x > globals.window.size.x - entity.radius) {
             entity.position.x = globals.window.size.x - entity.radius;
-            entity.velocity.x *= -1.0;
+            entity.velocity.x *= -entity.bounce;
         } else if (entity.position.x < 0 + entity.radius) {
             entity.position.x = entity.radius;
-            entity.velocity.x *= -1.0;
+            entity.velocity.x *= -entity.bounce;
         }
 
         if (entity.position.y > globals.window.size.y - entity.radius) {
             entity.position.y = globals.window.size.y - entity.radius;
-            entity.velocity.y *= -1.0;
+            entity.velocity.y *= -entity.bounce;
         }
     }
 
@@ -57,4 +62,9 @@ pub fn tick(state: *State) void {
 
 fn applyForce(entity: *Entity, force: m.Vec2) void {
     entity.acceleration = entity.acceleration.add(force.scale(1.0 / entity.mass));
+}
+
+fn circlesCollide(entity1: *Entity, entity2: *Entity) bool {
+    const distance = entity1.position.sub(entity2.position).length();
+    return distance < entity1.radius + entity2.radius;
 }

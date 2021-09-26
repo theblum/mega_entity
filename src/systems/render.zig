@@ -7,7 +7,7 @@ const globals = &@import("../globals.zig").globals;
 const EntityFlags = @import("../entity.zig").EntityFlags;
 const State = @import("../state.zig").State;
 
-pub const flags = [_]EntityFlags{.isRenderable};
+const flags = [_]EntityFlags{.isRenderable};
 
 pub fn tick(state: *State) void {
     _ = state;

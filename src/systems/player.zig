@@ -7,7 +7,7 @@ const globals = &@import("../globals.zig").globals;
 const EntityFlags = @import("../entity.zig").EntityFlags;
 const State = @import("../state.zig").State;
 
-pub const flags = [_]EntityFlags{.isControllable};
+const flags = [_]EntityFlags{.isControllable};
 
 var time: f32 = 0.0;
 

@@ -8,6 +8,7 @@ pub const EntityFlags = enum {
     isAlive,
     isRenderable,
     hasPhysics,
+    hasDrag,
     isControllable,
 };
 
@@ -19,6 +20,8 @@ pub const Entity = struct {
     velocity: m.Vec2 = undefined,
     acceleration: m.Vec2 = undefined,
     rotation: f32 = undefined,
+    bounce: f32 = undefined,
+    drag: f32 = undefined,
     mass: f32 = undefined,
     size: m.Vec2 = undefined,
     radius: f32 = undefined,
