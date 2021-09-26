@@ -67,11 +67,9 @@ pub fn main() anyerror!void {
     while (globals.window.isOpen()) {
         state.dt = clock.getSecondsAndRestart();
 
-        globals.renderer.clearWindow(m.vec4(0.2, 0.4, 0.6, 1.0));
-        globals.profiler.draw();
-        globals.profiler.reset();
-
         globals.profiler.start("Entire Frame");
+
+        globals.renderer.clearWindow(m.vec4(0.2, 0.4, 0.6, 1.0));
 
         globals.window.pollEvents();
 
@@ -95,10 +93,11 @@ pub fn main() anyerror!void {
             );
         }
 
-        globals.profiler.start("Swap Buffers");
-        globals.renderer.displayWindow();
         globals.profiler.end();
 
-        globals.profiler.end();
+        globals.profiler.draw();
+        globals.profiler.reset();
+
+        globals.renderer.displayWindow();
     }
 }
