@@ -19,8 +19,9 @@ const SystemManager = @import("engine").SystemManager(SystemItem, State);
 
 const Profiler = @import("profiler.zig").Profiler;
 
-pub const renderWidth = 1280;
-pub const renderHeight = 720;
+pub const renderWidth = 640;
+pub const renderHeight = 360;
+pub const scale = 2;
 const targetFPS = 60;
 
 pub fn main() anyerror!void {
@@ -41,7 +42,7 @@ pub fn main() anyerror!void {
         build_options.programName,
         renderWidth,
         renderHeight,
-        .{ .targetFPS = targetFPS, .keyRepeat = false },
+        .{ .targetFPS = targetFPS, .scale = scale, .keyRepeat = false },
     );
     defer globals.window.deinit();
     globals.window.addInput();
@@ -89,8 +90,8 @@ pub fn main() anyerror!void {
 
             globals.renderer.drawText(
                 &buffer,
-                .{ .x = 10.0, .y = 10.0 },
-                .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 14 },
+                .{ .x = 5.0, .y = 5.0 },
+                .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 11 },
             );
         }
 

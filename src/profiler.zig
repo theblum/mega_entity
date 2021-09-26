@@ -77,15 +77,15 @@ pub const Profiler = struct {
                 continue;
             }
 
-            var spaces: [256]u8 = .{' '} ** 256;
-            var dots: [30]u8 = .{'.'} ** 30;
+            var spaces: [32]u8 = .{' '} ** 32;
+            var dots: [32]u8 = .{'.'} ** 32;
 
             const numSpaces = frame.level * 2;
             const numDots = dots.len - frame.label.len - numSpaces;
 
             const elapsedMillis = @intToFloat(f64, frame.end - frame.start) / std.time.ns_per_ms;
 
-            const template = "LABEL ......................... XX.XXXms padding";
+            const template = "LABEL ........................... XX.XXXms padding";
             var buffer: [template.len:0]u8 = .{0} ** template.len;
             _ = std.fmt.bufPrint(
                 &buffer,
@@ -98,8 +98,8 @@ pub const Profiler = struct {
 
             globals.renderer.drawText(
                 &buffer,
-                .{ .x = 10.0, .y = 40.0 + (20.0 * @intToFloat(f32, i)) },
-                .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 14 },
+                .{ .x = 5.0, .y = 16.0 + (11.0 * @intToFloat(f32, i)) },
+                .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 11 },
             );
         }
     }

@@ -19,6 +19,7 @@ pub const Window = struct {
     const WindowOptions = struct {
         vsync: bool = false,
         targetFPS: u32 = 0,
+        scale: u32 = 1,
         keyRepeat: bool = true,
         mouseVisible: bool = true,
         mouseGrabbed: bool = false,
@@ -52,6 +53,7 @@ pub const Window = struct {
 
         c.sfRenderWindow_setVerticalSyncEnabled(result.handle, if (options.vsync) c.sfTrue else c.sfFalse);
         c.sfRenderWindow_setFramerateLimit(result.handle, options.targetFPS);
+        c.sfRenderWindow_setSize(result.handle, .{ .x = width * options.scale, .y = height * options.scale });
         c.sfRenderWindow_setKeyRepeatEnabled(result.handle, if (options.keyRepeat) c.sfTrue else c.sfFalse);
         c.sfRenderWindow_setMouseCursorVisible(result.handle, if (options.mouseVisible) c.sfTrue else c.sfFalse);
         c.sfRenderWindow_setMouseCursorGrabbed(result.handle, if (options.mouseGrabbed) c.sfTrue else c.sfFalse);

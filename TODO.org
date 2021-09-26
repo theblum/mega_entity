@@ -18,8 +18,10 @@
 + [-] Keyboard input [1/2]
   - [X] Basic implementation
   - [ ] Add more keys
-+ [-] Rendering [1/3]
++ [-] Rendering [2/5]
+  - [ ] Batch rendering
+  - [ ] Add layers
   - [ ] Sprites
   - [X] Rectangles
-  - [ ] Add layers
+  - [X] Circles
 + [ ] Chipmunk2D?
