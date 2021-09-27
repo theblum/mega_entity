@@ -37,13 +37,8 @@ pub const Input = struct {
 
     pub fn getMousePosition(self: Self) m.Vec2 {
         const position = c.sfMouse_getPositionRenderWindow(self.window.handle);
-        const windowSize = self.window.getActualSize();
-        const adjustedPosition = .{
-            .x = @intToFloat(f32, position.x) * self.window.size.x / windowSize.x,
-            .y = @intToFloat(f32, position.y) * self.window.size.y / windowSize.y,
-        };
-
-        return adjustedPosition;
+        const adjustedPosition = c.sfRenderWindow_mapPixelToCoords(self.window.handle, position, null);
+        return .{ .x = adjustedPosition.x, .y = adjustedPosition.y };
     }
 
     pub fn getKey(self: Self, key: Keys) KeyItem {
