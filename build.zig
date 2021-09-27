@@ -10,7 +10,7 @@ pub fn build(b: *std.build.Builder) void {
     const zlm = std.build.Pkg{ .name = "zlm", .path = std.build.FileSource.relative("vendor/zlm/zlm.zig") };
     const engine = std.build.Pkg{
         .name = "engine",
-        .path = std.build.FileSource.relative("lib/engine/engine.zig"),
+        .path = std.build.FileSource.relative("lib/engine/src/engine.zig"),
         .dependencies = &.{zlm},
     };
 
