@@ -39,8 +39,8 @@ pub fn tick(state: *State) void {
             applyForce(entity, friction);
         }
 
-        entity.velocity = entity.velocity.add(entity.acceleration.scale(state.dt));
-        entity.position = entity.position.add(entity.velocity.scale(state.dt));
+        entity.velocity = entity.velocity.add(entity.acceleration.scale(state.deltaTime));
+        entity.position = entity.position.add(entity.velocity.scale(state.deltaTime));
         entity.acceleration = entity.acceleration.scale(0.0);
 
         if (entity.position.x > globals.window.size.x - entity.radius) {

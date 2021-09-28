@@ -9,13 +9,12 @@ const systems = @import("systems.zig");
 const State = @import("state.zig").State;
 const Entity = @import("entity.zig").Entity;
 const EntityFlags = @import("entity.zig").EntityFlags;
-const SystemItem = @import("systems.zig").SystemItem;
 
 const Window = @import("engine").Window;
 const Clock = @import("engine").Clock;
 const Renderer = @import("engine").Renderer;
 const EntityManager = @import("engine").EntityManager(Entity, EntityFlags);
-const SystemManager = @import("engine").SystemManager(SystemItem, State);
+const SystemManager = @import("engine").SystemManager(State);
 
 const Profiler = @import("profiler.zig").Profiler;
 
@@ -29,14 +28,6 @@ pub fn main() anyerror!void {
 
     var prng = std.rand.DefaultPrng.init(@intCast(u64, std.time.milliTimestamp()));
     globals.rand = &prng.random;
-
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-
-    globals.entityManager = try EntityManager.init(&arena.allocator);
-    defer globals.entityManager.deinit();
-
-    globals.systemManager = SystemManager.init(&systems.list);
 
     globals.window = try Window.init(
         build_options.programName,
@@ -52,20 +43,21 @@ pub fn main() anyerror!void {
 
     globals.profiler = Profiler{};
 
-    var playerHandle = try globals.entityManager.createEntity(.{
-        .renderType = .rectangle,
-        .position = m.vec2(globals.window.size.x * 0.5, globals.window.size.y * 0.5),
-        .rotation = 0.0,
-        .size = m.vec2(20.0, 40.0),
-        .color = m.vec4(0.8, 0.7, 0.6, 1.0),
-    });
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
 
-    (try globals.entityManager.getEntityPtr(playerHandle)).setFlags(&.{ .isRenderable, .isControllable });
+    globals.entityManager = try EntityManager.init(&arena.allocator);
+    defer globals.entityManager.deinit();
+
+    globals.gameStates.set(.bouncyBalls, .{ .systemManager = SystemManager.init(&systems.bouncyBalls) });
+    globals.gameStates.set(.randomDrag, .{ .systemManager = SystemManager.init(&systems.randomDrag) });
+    globals.gameStates.set(.playerMove, .{ .systemManager = SystemManager.init(&systems.playerMove) });
+    state.currentGameState = .randomDrag;
 
     var clock = try Clock.init();
     defer clock.deinit();
     while (globals.window.isOpen()) {
-        state.dt = clock.getSecondsAndRestart();
+        state.deltaTime = clock.getSecondsAndRestart();
 
         globals.profiler.start("Entire Frame");
 
@@ -74,7 +66,7 @@ pub fn main() anyerror!void {
         globals.window.pollEvents();
 
         globals.profiler.start("Run Systems");
-        globals.systemManager.tick(&state);
+        globals.gameStates.getPtr(state.currentGameState).systemManager.run(&state);
         globals.profiler.end();
 
         if (std.builtin.mode == .Debug) {
@@ -83,7 +75,7 @@ pub fn main() anyerror!void {
             _ = try std.fmt.bufPrint(
                 &buffer,
                 "dt: {d:.4} s/f, ec: {d:0>4}",
-                .{ state.dt, globals.entityManager.entityCount },
+                .{ state.deltaTime, globals.entityManager.entityCount },
             );
 
             globals.renderer.drawText(

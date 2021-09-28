@@ -9,9 +9,7 @@ const State = @import("../state.zig").State;
 
 const flags = [_]EntityFlags{.isRenderable};
 
-pub fn tick(state: *State) void {
-    _ = state;
-
+pub fn tick(_: *State) void {
     globals.profiler.start("Render System");
 
     var iterator = globals.entityManager.iterator();

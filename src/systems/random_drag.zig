@@ -1,19 +1,17 @@
 const std = @import("std");
-const log = std.log.scoped(.dragSpawnerSystem);
+const log = std.log.scoped(.randomDragSystem);
 const m = @import("zlm");
 
 const globals = &@import("../globals.zig").globals;
 
 const State = @import("../state.zig").State;
 
-var count: usize = 0;
 const countMax = 5;
 
-pub fn tick(state: *State) void {
-    _ = state;
+pub fn init(_: *State) bool {
+    globals.profiler.start("Drag Spawner Init");
 
-    globals.profiler.start("Drag Spawner System");
-
+    var count: usize = 0;
     while (count < countMax) : (count += 1) {
         const position = .{
             .x = globals.rand.float(f32) * globals.window.size.x,
@@ -30,7 +28,7 @@ pub fn tick(state: *State) void {
             .color = m.vec4(0.2, 0.8, 0.6, drag / 5.0),
         }) catch |e| {
             log.err("Unable to create entity: {s}", .{e});
-            return;
+            return false;
         };
 
         var ptr = globals.entityManager.getEntityPtr(handle) catch unreachable;
@@ -38,4 +36,10 @@ pub fn tick(state: *State) void {
     }
 
     globals.profiler.end();
+
+    return false;
+}
+
+pub fn deinit(_: *State) void {
+    return;
 }

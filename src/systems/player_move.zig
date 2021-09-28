@@ -1,15 +1,41 @@
 const std = @import("std");
-const log = std.log.scoped(.playerSystem);
+const log = std.log.scoped(.playerMoveSystem);
 const m = @import("zlm");
 
 const globals = &@import("../globals.zig").globals;
 
+const Entity = @import("../entity.zig").Entity;
 const EntityFlags = @import("../entity.zig").EntityFlags;
+const EntityManager = @import("engine").EntityManager(Entity, EntityFlags);
 const State = @import("../state.zig").State;
 
-const flags = [_]EntityFlags{.isControllable};
-
 var time: f32 = 0.0;
+
+var handle: EntityManager.Handle = undefined;
+
+pub fn init(_: *State) bool {
+    handle = globals.entityManager.createEntity(.{
+        .renderType = .rectangle,
+        .position = m.vec2(globals.window.size.x * 0.5, globals.window.size.y * 0.5),
+        .rotation = 0.0,
+        .size = m.vec2(20.0, 40.0),
+        .color = m.vec4(0.8, 0.7, 0.6, 1.0),
+    }) catch |e| {
+        log.err("Unable to create player entity: {s}", .{e});
+        return false;
+    };
+
+    var ptr = globals.entityManager.getEntityPtr(handle) catch unreachable;
+    ptr.setFlags(&.{ .isRenderable, .isControllable });
+
+    return false;
+}
+
+pub fn deinit(_: *State) void {
+    globals.entityManager.deleteEntity(handle);
+}
+
+const flags = [_]EntityFlags{.isControllable};
 
 pub fn tick(state: *State) void {
     globals.profiler.start("Player System");
@@ -38,9 +64,9 @@ pub fn tick(state: *State) void {
             movement.y += 1.0;
 
         movement = movement.normalize();
-        entity.position = entity.position.add(movement.scale(speed * state.dt));
+        entity.position = entity.position.add(movement.scale(speed * state.deltaTime));
 
-        time += state.dt;
+        time += state.deltaTime;
         entity.rotation = @sin(time * 5.0) * 180.0 / std.math.pi;
     }
 

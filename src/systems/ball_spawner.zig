@@ -6,9 +6,7 @@ const globals = &@import("../globals.zig").globals;
 
 const State = @import("../state.zig").State;
 
-pub fn tick(state: *State) void {
-    _ = state;
-
+pub fn tick(_: *State) void {
     globals.profiler.start("Ball Spawner System");
 
     const button = globals.window.input.getMouseButton(.left);
