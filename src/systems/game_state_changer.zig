@@ -12,8 +12,7 @@ pub fn tick(_: *State) void {
 
     var changeGameState = false;
     const currentGameState = gbls.gameStateManager.current.?;
-    // @Todo: Add this to GameStateManager in engine
-    var index: usize = @TypeOf(gbls.gameStateManager.array).Indexer.indexOf(currentGameState);
+    var index = globals.engine.GameStateManager.indexOf(currentGameState);
 
     const qKey = gbls.window.input.getKey(.q);
     if (!qKey.wasDown and qKey.isDown) {
@@ -28,7 +27,7 @@ pub fn tick(_: *State) void {
     }
 
     if (changeGameState) {
-        var nextGameState = @TypeOf(gbls.gameStateManager.array).Indexer.keyForIndex(index);
+        var nextGameState = globals.engine.GameStateManager.keyForIndex(index);
         gbls.gameStateManager.setTo(nextGameState);
     }
     gbls.profiler.end();
