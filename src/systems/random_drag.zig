@@ -5,15 +5,13 @@ const m = @import("zlm");
 const globals = @import("../globals.zig");
 const gbls = &globals.gbls;
 
+const EntityManager = globals.engine.EntityManager;
 const State = @import("../state.zig").State;
 
-const countMax = 5;
+var handles: [5]EntityManager.Handle = undefined;
 
 pub fn start(_: *State) bool {
-    gbls.profiler.start("Drag Spawner Init");
-
-    var count: usize = 0;
-    while (count < countMax) : (count += 1) {
+    for (handles) |*handle| {
         const position = .{
             .x = gbls.rand.float(f32) * gbls.window.size.x,
             .y = gbls.rand.float(f32) * gbls.window.size.y,
@@ -21,7 +19,7 @@ pub fn start(_: *State) bool {
         const drag = gbls.rand.float(f32) * 5.0;
         const radius = drag * 5.0 + 20.0;
 
-        var handle = gbls.entityManager.createEntity(.{
+        handle.* = gbls.entityManager.createEntity(.{
             .renderType = .circle,
             .position = position,
             .radius = radius,
@@ -32,15 +30,22 @@ pub fn start(_: *State) bool {
             return false;
         };
 
-        var ptr = gbls.entityManager.getEntityPtr(handle) catch unreachable;
+        var ptr = gbls.entityManager.getEntityPtr(handle.*) catch unreachable;
         ptr.setFlags(&.{ .isRenderable, .hasDrag });
     }
-
-    gbls.profiler.end();
 
     return true;
 }
 
+var ballSpawnerHandles = &@import("ball_spawner.zig").handles;
+var ballSpawnerHandlesCount = &@import("ball_spawner.zig").handlesCount;
+
 pub fn end(_: *State) void {
-    return;
+    for (handles) |handle|
+        gbls.entityManager.deleteEntity(handle);
+
+    for (ballSpawnerHandles[0..ballSpawnerHandlesCount.*]) |handle|
+        gbls.entityManager.deleteEntity(handle);
+
+    ballSpawnerHandlesCount.* = 0;
 }

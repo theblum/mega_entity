@@ -5,18 +5,28 @@ const m = @import("zlm");
 const globals = @import("../globals.zig");
 const gbls = &globals.gbls;
 
+const EntityManger = globals.engine.EntityManager;
 const State = @import("../state.zig").State;
+
+pub var handles: [100]EntityManger.Handle = undefined;
+pub var handlesCount: usize = 0;
 
 pub fn tick(_: *State) void {
     gbls.profiler.start("Ball Spawner System");
 
     const button = gbls.window.input.getMouseButton(.left);
     if (!button.wasDown and button.isDown) {
+        if (handlesCount >= handles.len) {
+            log.err("Unable to create more balls, array is full", .{});
+            return;
+        }
+
         const position = gbls.window.input.getMousePosition();
         const mass = (gbls.rand.float(f32) * 20.0) + 10.0;
         const radius = @sqrt(mass) * 5.0;
 
-        var handle = gbls.entityManager.createEntity(.{
+        var handle = &handles[handlesCount];
+        handle.* = gbls.entityManager.createEntity(.{
             .renderType = .circle,
             .position = position,
             .velocity = m.vec2(0.0, 0.0),
@@ -31,8 +41,10 @@ pub fn tick(_: *State) void {
             return;
         };
 
-        var ptr = gbls.entityManager.getEntityPtr(handle) catch unreachable;
+        var ptr = gbls.entityManager.getEntityPtr(handle.*) catch unreachable;
         ptr.setFlags(&.{ .isRenderable, .hasPhysics });
+
+        handlesCount += 1;
     }
 
     gbls.profiler.end();

@@ -7,7 +7,7 @@ const gbls = &globals.gbls;
 
 const Entity = @import("../entity.zig").Entity;
 const EntityFlags = @import("../entity.zig").EntityFlags;
-const EntityManager = @import("engine").EntityManager(Entity, EntityFlags);
+const EntityManager = globals.engine.EntityManager;
 const State = @import("../state.zig").State;
 
 var time: f32 = 0.0;
@@ -29,7 +29,7 @@ pub fn start(_: *State) bool {
     var ptr = gbls.entityManager.getEntityPtr(handle) catch unreachable;
     ptr.setFlags(&.{ .isRenderable, .isControllable });
 
-    return false;
+    return true;
 }
 
 pub fn end(_: *State) void {

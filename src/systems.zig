@@ -13,21 +13,22 @@ const playerMoveFns = @import("systems/player_move.zig");
 const ballSpawner = @import("systems/ball_spawner.zig");
 const physics = @import("systems/physics.zig");
 const render = @import("systems/render.zig");
+const gameStateChanger = @import("systems/game_state_changer.zig");
 
 pub const bouncyBalls = SystemManager.Item{
     .startFn = bouncyBallsFns.start,
     .endFn = bouncyBallsFns.end,
-    .tickFns = &.{ ballSpawner.tick, physics.tick, render.tick },
+    .tickFns = &.{ gameStateChanger.tick, ballSpawner.tick, physics.tick, render.tick },
 };
 
 pub const playerMove = SystemManager.Item{
     .startFn = playerMoveFns.start,
     .endFn = playerMoveFns.end,
-    .tickFns = &.{ playerMoveFns.tick, render.tick },
+    .tickFns = &.{ gameStateChanger.tick, playerMoveFns.tick, render.tick },
 };
 
 pub const randomDrag = SystemManager.Item{
     .startFn = randomDragFns.start,
     .endFn = randomDragFns.end,
-    .tickFns = &.{ ballSpawner.tick, physics.tick, render.tick },
+    .tickFns = &.{ gameStateChanger.tick, ballSpawner.tick, physics.tick, render.tick },
 };
