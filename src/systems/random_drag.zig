@@ -8,7 +8,7 @@ const State = @import("../state.zig").State;
 
 const countMax = 5;
 
-pub fn init(_: *State) bool {
+pub fn start(_: *State) bool {
     globals.profiler.start("Drag Spawner Init");
 
     var count: usize = 0;
@@ -40,6 +40,6 @@ pub fn init(_: *State) bool {
     return false;
 }
 
-pub fn deinit(_: *State) void {
+pub fn end(_: *State) void {
     return;
 }

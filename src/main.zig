@@ -9,12 +9,13 @@ const systems = @import("systems.zig");
 const State = @import("state.zig").State;
 const Entity = @import("entity.zig").Entity;
 const EntityFlags = @import("entity.zig").EntityFlags;
+const GameStates = @import("game_states.zig").GameStates;
 
 const Window = @import("engine").Window;
 const Clock = @import("engine").Clock;
 const Renderer = @import("engine").Renderer;
 const EntityManager = @import("engine").EntityManager(Entity, EntityFlags);
-const SystemManager = @import("engine").SystemManager(State);
+const GameStateManager = @import("engine").GameStateManager(GameStates, State);
 
 const Profiler = @import("profiler.zig").Profiler;
 
@@ -49,10 +50,11 @@ pub fn main() anyerror!void {
     globals.entityManager = try EntityManager.init(&arena.allocator);
     defer globals.entityManager.deinit();
 
-    globals.gameStates.set(.bouncyBalls, .{ .systemManager = SystemManager.init(&systems.bouncyBalls) });
-    globals.gameStates.set(.randomDrag, .{ .systemManager = SystemManager.init(&systems.randomDrag) });
-    globals.gameStates.set(.playerMove, .{ .systemManager = SystemManager.init(&systems.playerMove) });
-    state.currentGameState = .randomDrag;
+    globals.gameStateManager = GameStateManager.init(.randomDrag);
+    // @Todo: defer run current game state's `endFn`
+    globals.gameStateManager.register(.bouncyBalls, &systems.bouncyBalls);
+    globals.gameStateManager.register(.randomDrag, &systems.randomDrag);
+    globals.gameStateManager.register(.playerMove, &systems.playerMove);
 
     var clock = try Clock.init();
     defer clock.deinit();
@@ -66,7 +68,7 @@ pub fn main() anyerror!void {
         globals.window.pollEvents();
 
         globals.profiler.start("Run Systems");
-        globals.gameStates.getPtr(state.currentGameState).systemManager.run(&state);
+        globals.gameStateManager.run(&state);
         globals.profiler.end();
 
         if (std.builtin.mode == .Debug) {

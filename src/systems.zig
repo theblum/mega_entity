@@ -13,27 +13,19 @@ const physics = @import("systems/physics.zig");
 const render = @import("systems/render.zig");
 
 pub const bouncyBalls = SystemManager.Item{
-    .initFn = bouncyBallsFns.init,
-    .deinitFn = bouncyBallsFns.deinit,
+    .startFn = bouncyBallsFns.start,
+    .endFn = bouncyBallsFns.end,
     .tickFns = &.{ ballSpawner.tick, physics.tick, render.tick },
 };
 
 pub const playerMove = SystemManager.Item{
-    .initFn = playerMoveFns.init,
-    .deinitFn = playerMoveFns.deinit,
+    .startFn = playerMoveFns.start,
+    .endFn = playerMoveFns.end,
     .tickFns = &.{ playerMoveFns.tick, render.tick },
 };
 
 pub const randomDrag = SystemManager.Item{
-    .initFn = randomDragFns.init,
-    .deinitFn = randomDragFns.deinit,
+    .startFn = randomDragFns.start,
+    .endFn = randomDragFns.end,
     .tickFns = &.{ ballSpawner.tick, physics.tick, render.tick },
 };
-
-fn init(_: *State) bool {
-    return false;
-}
-
-fn deinit(_: *State) void {
-    return;
-}

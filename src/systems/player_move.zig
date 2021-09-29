@@ -13,7 +13,7 @@ var time: f32 = 0.0;
 
 var handle: EntityManager.Handle = undefined;
 
-pub fn init(_: *State) bool {
+pub fn start(_: *State) bool {
     handle = globals.entityManager.createEntity(.{
         .renderType = .rectangle,
         .position = m.vec2(globals.window.size.x * 0.5, globals.window.size.y * 0.5),
@@ -31,7 +31,7 @@ pub fn init(_: *State) bool {
     return false;
 }
 
-pub fn deinit(_: *State) void {
+pub fn end(_: *State) void {
     globals.entityManager.deleteEntity(handle);
 }
 
