@@ -2,25 +2,26 @@ const std = @import("std");
 const log = std.log.scoped(.randomDragSystem);
 const m = @import("zlm");
 
-const globals = &@import("../globals.zig").globals;
+const globals = @import("../globals.zig");
+const gbls = &globals.gbls;
 
 const State = @import("../state.zig").State;
 
 const countMax = 5;
 
 pub fn start(_: *State) bool {
-    globals.profiler.start("Drag Spawner Init");
+    gbls.profiler.start("Drag Spawner Init");
 
     var count: usize = 0;
     while (count < countMax) : (count += 1) {
         const position = .{
-            .x = globals.rand.float(f32) * globals.window.size.x,
-            .y = globals.rand.float(f32) * globals.window.size.y,
+            .x = gbls.rand.float(f32) * gbls.window.size.x,
+            .y = gbls.rand.float(f32) * gbls.window.size.y,
         };
-        const drag = globals.rand.float(f32) * 5.0;
+        const drag = gbls.rand.float(f32) * 5.0;
         const radius = drag * 5.0 + 20.0;
 
-        var handle = globals.entityManager.createEntity(.{
+        var handle = gbls.entityManager.createEntity(.{
             .renderType = .circle,
             .position = position,
             .radius = radius,
@@ -31,13 +32,13 @@ pub fn start(_: *State) bool {
             return false;
         };
 
-        var ptr = globals.entityManager.getEntityPtr(handle) catch unreachable;
+        var ptr = gbls.entityManager.getEntityPtr(handle) catch unreachable;
         ptr.setFlags(&.{ .isRenderable, .hasDrag });
     }
 
-    globals.profiler.end();
+    gbls.profiler.end();
 
-    return false;
+    return true;
 }
 
 pub fn end(_: *State) void {

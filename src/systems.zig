@@ -1,8 +1,10 @@
 const std = @import("std");
 const log = std.log.scoped(.systems);
 
+const globals = @import("globals.zig");
+
 const State = @import("state.zig").State;
-const SystemManager = @import("engine").SystemManager(State);
+const SystemManager = globals.engine.SystemManager;
 
 const bouncyBallsFns = @import("systems/bouncy_balls.zig");
 const randomDragFns = @import("systems/random_drag.zig");

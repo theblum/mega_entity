@@ -1,6 +1,6 @@
 #+TITLE: Todo List
 
-* TODO Current Tasks [3/7]
+* TODO Current Tasks [4/8]
 + [-] Profiler [1/4]
   - [X] Basic profiling
   - [ ] Only print on button press
@@ -15,6 +15,7 @@
   - [X] Clock
 + [X] Use globals instead of state
 + [X] Mouse input
++ [X] GameStateManager
 + [-] Keyboard input [1/2]
   - [X] Basic implementation
   - [ ] Add more keys

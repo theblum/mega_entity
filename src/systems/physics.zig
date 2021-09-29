@@ -2,7 +2,8 @@ const std = @import("std");
 const log = std.log.scoped(.physicsSystem);
 const m = @import("zlm");
 
-const globals = &@import("../globals.zig").globals;
+const globals = @import("../globals.zig");
+const gbls = &globals.gbls;
 
 const Entity = @import("../entity.zig").Entity;
 const EntityFlags = @import("../entity.zig").EntityFlags;
@@ -11,9 +12,9 @@ const State = @import("../state.zig").State;
 const flags = [_]EntityFlags{.hasPhysics};
 
 pub fn tick(state: *State) void {
-    globals.profiler.start("Physics System");
+    gbls.profiler.start("Physics System");
 
-    var iterator = globals.entityManager.iterator();
+    var iterator = gbls.entityManager.iterator();
     while (iterator.next(&flags)) |item| {
         var entity = &item.entity.?;
 
@@ -22,7 +23,7 @@ pub fn tick(state: *State) void {
         applyForce(entity, gravity.scale(entity.mass));
         applyForce(entity, wind);
 
-        var dragIter = globals.entityManager.iterator();
+        var dragIter = gbls.entityManager.iterator();
         while (dragIter.next(&.{.hasDrag})) |dragItem| {
             var dragEntity = &dragItem.entity.?;
             if (circlesCollide(entity, dragEntity)) {
@@ -32,7 +33,7 @@ pub fn tick(state: *State) void {
             }
         }
 
-        if (globals.window.size.y - (entity.position.y + entity.radius) < 1.0) {
+        if (gbls.window.size.y - (entity.position.y + entity.radius) < 1.0) {
             var friction = entity.velocity.normalize().scale(-1.0);
             const frictionCoef = 50.0;
             friction = friction.scale(frictionCoef);
@@ -43,21 +44,21 @@ pub fn tick(state: *State) void {
         entity.position = entity.position.add(entity.velocity.scale(state.deltaTime));
         entity.acceleration = entity.acceleration.scale(0.0);
 
-        if (entity.position.x > globals.window.size.x - entity.radius) {
-            entity.position.x = globals.window.size.x - entity.radius;
+        if (entity.position.x > gbls.window.size.x - entity.radius) {
+            entity.position.x = gbls.window.size.x - entity.radius;
             entity.velocity.x *= -entity.bounce;
         } else if (entity.position.x < 0 + entity.radius) {
             entity.position.x = entity.radius;
             entity.velocity.x *= -entity.bounce;
         }
 
-        if (entity.position.y > globals.window.size.y - entity.radius) {
-            entity.position.y = globals.window.size.y - entity.radius;
+        if (entity.position.y > gbls.window.size.y - entity.radius) {
+            entity.position.y = gbls.window.size.y - entity.radius;
             entity.velocity.y *= -entity.bounce;
         }
     }
 
-    globals.profiler.end();
+    gbls.profiler.end();
 }
 
 fn applyForce(entity: *Entity, force: m.Vec2) void {

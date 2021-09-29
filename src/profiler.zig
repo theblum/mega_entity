@@ -2,7 +2,8 @@ const std = @import("std");
 const log = std.log.scoped(.profiler);
 const m = @import("zlm");
 
-const globals = &@import("globals.zig").globals;
+const globals = @import("globals.zig");
+const gbls = &globals.gbls;
 
 const Frame = struct {
     label: []const u8,
@@ -96,7 +97,7 @@ pub const Profiler = struct {
                 continue;
             };
 
-            globals.renderer.drawText(
+            gbls.renderer.drawText(
                 &buffer,
                 .{ .x = 5.0, .y = 16.0 + (11.0 * @intToFloat(f32, i)) },
                 .{ .color = m.vec4(0.0, 1.0, 0.0, 1.0), .size = 11 },
