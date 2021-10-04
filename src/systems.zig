@@ -37,5 +37,5 @@ pub const playerMove = SystemManager.Item{
 pub const gravitationalPull = SystemManager.Item{
     .startFn = gravitationalPullFns.start,
     .endFn = gravitationalPullFns.end,
-    .tickFns = &.{ gameStateChanger.tick, gravitationalPullFns.tick, render.tick },
+    .tickFns = &.{ gameStateChanger.tick, gravitationalPullFns.tick, gravitationalPullFns.tick2, render.tick },
 };
