@@ -40,6 +40,11 @@ pub fn start(_: *State) bool {
                 .x = gbls.rand.float(f32) * gbls.window.size.x,
                 .y = gbls.rand.float(f32) * gbls.window.size.y,
             },
+            // @Note: This allows the movers to orbit around the attractor
+            .velocity = .{
+                .x = gbls.rand.float(f32) * 100.0 - 50.0,
+                .y = gbls.rand.float(f32) * 100.0 - 50.0,
+            },
             .mass = mass,
             .radius = mass * 15.0,
             .color = m.vec4(0.6, 0.4, 0.2, 0.9),
