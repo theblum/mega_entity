@@ -39,7 +39,7 @@ pub fn end(_: *State) void {
 const flags = [_]EntityFlags{.isControllable};
 
 pub fn tick(state: *State) void {
-    gbls.profiler.start("Player System");
+    gbls.profiler.start("Player Move System");
 
     var iterator = gbls.entityManager.iterator();
     while (iterator.next(&flags)) |item| {

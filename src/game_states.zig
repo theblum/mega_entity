@@ -7,4 +7,5 @@ pub const GameStates = enum {
     bouncyBalls,
     randomDrag,
     playerMove,
+    gravitationalPull,
 };

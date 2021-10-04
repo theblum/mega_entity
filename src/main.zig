@@ -52,11 +52,12 @@ pub fn main() anyerror!void {
     gbls.entityManager = try EntityManager.init(&arena.allocator);
     defer gbls.entityManager.deinit();
 
-    gbls.gameStateManager = GameStateManager.init(.randomDrag);
+    gbls.gameStateManager = GameStateManager.init(.gravitationalPull);
     defer gbls.gameStateManager.deinit(&state);
     gbls.gameStateManager.register(.bouncyBalls, &systems.bouncyBalls);
     gbls.gameStateManager.register(.randomDrag, &systems.randomDrag);
     gbls.gameStateManager.register(.playerMove, &systems.playerMove);
+    gbls.gameStateManager.register(.gravitationalPull, &systems.gravitationalPull);
 
     var clock = try Clock.init();
     defer clock.deinit();

@@ -16,6 +16,7 @@ pub const Entity = struct {
     flags: std.StaticBitSet(EntityFlags.len) = std.StaticBitSet(EntityFlags.len).initEmpty(),
 
     renderType: RenderTypes = .none,
+    physicsType: PhysicsTypes = .none,
     position: m.Vec2 = undefined,
     velocity: m.Vec2 = undefined,
     acceleration: m.Vec2 = undefined,
@@ -26,6 +27,12 @@ pub const Entity = struct {
     size: m.Vec2 = undefined,
     radius: f32 = undefined,
     color: m.Vec4 = undefined,
+
+    pub const PhysicsTypes = enum {
+        none,
+        mover,
+        attractor,
+    };
 
     pub const RenderTypes = enum {
         none,

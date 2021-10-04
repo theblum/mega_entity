@@ -5,5 +5,4 @@ const GameStates = @import("game_states.zig").GameStates;
 
 pub const State = struct {
     deltaTime: f32,
-    currentGameState: GameStates,
 };
