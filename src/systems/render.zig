@@ -11,7 +11,7 @@ const State = @import("../state.zig").State;
 const flags = [_]EntityFlags{.isRenderable};
 
 pub fn tick(_: *State) void {
-    gbls.profiler.start("Render System");
+    gbls.profiler.start("Render");
 
     var iterator = gbls.entityManager.iterator();
     while (iterator.next(&flags)) |item| {

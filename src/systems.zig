@@ -2,11 +2,11 @@ const std = @import("std");
 const log = std.log.scoped(.systems);
 
 const globals = @import("globals.zig");
+const gbls = &globals.gbls;
 
 const State = @import("state.zig").State;
 const SystemManager = globals.engine.SystemManager;
 
-const bouncyBallsFns = @import("systems/bouncy_balls.zig");
 const randomDragFns = @import("systems/random_drag.zig");
 const playerMoveFns = @import("systems/player_move.zig");
 const gravitationalPullFns = @import("systems/gravitational_pull.zig");
@@ -17,25 +17,36 @@ const render = @import("systems/render.zig");
 const gameStateChanger = @import("systems/game_state_changer.zig");
 
 pub const bouncyBalls = SystemManager.Item{
-    .startFn = bouncyBallsFns.start,
-    .endFn = bouncyBallsFns.end,
+    .startFn = defaultStart,
+    .endFn = defaultEnd,
     .tickFns = &.{ gameStateChanger.tick, ballSpawner.tick, physics.tick, render.tick },
 };
 
 pub const randomDrag = SystemManager.Item{
     .startFn = randomDragFns.start,
-    .endFn = randomDragFns.end,
+    .endFn = defaultEnd,
     .tickFns = &.{ gameStateChanger.tick, ballSpawner.tick, physics.tick, render.tick },
 };
 
 pub const playerMove = SystemManager.Item{
     .startFn = playerMoveFns.start,
-    .endFn = playerMoveFns.end,
+    .endFn = defaultEnd,
     .tickFns = &.{ gameStateChanger.tick, playerMoveFns.tick, render.tick },
 };
 
 pub const gravitationalPull = SystemManager.Item{
     .startFn = gravitationalPullFns.start,
-    .endFn = gravitationalPullFns.end,
-    .tickFns = &.{ gameStateChanger.tick, gravitationalPullFns.tick, gravitationalPullFns.tick2, render.tick },
+    .endFn = defaultEnd,
+    .tickFns = &.{ gameStateChanger.tick, gravitationalPullFns.tick, gravitationalPullFns.dragAttractor, render.tick },
 };
+
+pub fn defaultStart(_: *State) bool {
+    return true;
+}
+
+pub fn defaultEnd(_: *State) void {
+    var iterator = gbls.entityManager.iterator();
+    while (iterator.next(&.{})) |item| {
+        gbls.entityManager.deleteEntity(item.handle);
+    }
+}

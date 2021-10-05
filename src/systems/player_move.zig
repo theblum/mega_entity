@@ -5,17 +5,13 @@ const m = @import("zlm");
 const globals = @import("../globals.zig");
 const gbls = &globals.gbls;
 
-const Entity = @import("../entity.zig").Entity;
 const EntityFlags = @import("../entity.zig").EntityFlags;
-const EntityManager = globals.engine.EntityManager;
 const State = @import("../state.zig").State;
 
 var time: f32 = 0.0;
 
-var handle: EntityManager.Handle = undefined;
-
 pub fn start(_: *State) bool {
-    handle = gbls.entityManager.createEntity(.{
+    var handle = gbls.entityManager.createEntity(.{
         .renderType = .rectangle,
         .position = m.vec2(gbls.window.size.x * 0.5, gbls.window.size.y * 0.5),
         .rotation = 0.0,
@@ -32,14 +28,10 @@ pub fn start(_: *State) bool {
     return true;
 }
 
-pub fn end(_: *State) void {
-    gbls.entityManager.deleteEntity(handle);
-}
-
 const flags = [_]EntityFlags{.isControllable};
 
 pub fn tick(state: *State) void {
-    gbls.profiler.start("Player Move System");
+    gbls.profiler.start("Player Move");
 
     var iterator = gbls.entityManager.iterator();
     while (iterator.next(&flags)) |item| {

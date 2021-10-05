@@ -70,17 +70,10 @@ pub fn start(_: *State) bool {
     return true;
 }
 
-pub fn end(_: *State) void {
-    var iterator = gbls.entityManager.iterator();
-    while (iterator.next(&.{})) |item| {
-        gbls.entityManager.deleteEntity(item.handle);
-    }
-}
-
 const flags = [_]EntityFlags{.hasPhysics};
 
 pub fn tick(state: *State) void {
-    gbls.profiler.start("Grav. Pull System");
+    gbls.profiler.start("Gravitational Pull");
 
     var iterator = gbls.entityManager.iterator();
     while (iterator.next(&flags)) |item| {
@@ -120,8 +113,8 @@ fn applyForce(entity: *Entity, force: m.Vec2) void {
 var draggedHandle: ?EntityManager.Handle = null;
 var dragOffset: m.Vec2 = undefined;
 
-pub fn tick2(_: *State) void {
-    gbls.profiler.start("Grav. Pull Mouse System");
+pub fn dragAttractor(_: *State) void {
+    gbls.profiler.start("Gravitational Pull Mouse");
 
     var iterator = gbls.entityManager.iterator();
     while (iterator.next(&.{.hasPhysics})) |item| {

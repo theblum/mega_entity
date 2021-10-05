@@ -12,7 +12,7 @@ const State = @import("../state.zig").State;
 const flags = [_]EntityFlags{.hasPhysics};
 
 pub fn tick(state: *State) void {
-    gbls.profiler.start("Physics System");
+    gbls.profiler.start("Physics");
 
     var iterator = gbls.entityManager.iterator();
     while (iterator.next(&flags)) |item| {

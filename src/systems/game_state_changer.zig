@@ -8,7 +8,7 @@ const State = @import("../state.zig").State;
 const GameStates = @import("../game_states.zig").GameStates;
 
 pub fn tick(_: *State) void {
-    gbls.profiler.start("Game State Changer System");
+    gbls.profiler.start("Game State Changer");
 
     var changeGameState = false;
     const currentGameState = gbls.gameStateManager.current.?;
@@ -30,5 +30,6 @@ pub fn tick(_: *State) void {
         var nextGameState = globals.engine.GameStateManager.keyForIndex(index);
         gbls.gameStateManager.setTo(nextGameState);
     }
+
     gbls.profiler.end();
 }
