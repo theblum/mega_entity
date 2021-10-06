@@ -1,5 +1,6 @@
 const std = @import("std");
 const log = std.log.scoped(.gameStateChangerSystem);
+const m = @import("zlm");
 
 const globals = @import("../globals.zig");
 const gbls = &globals.gbls;
@@ -28,8 +29,50 @@ pub fn tick(_: *State) void {
 
     if (changeGameState) {
         var nextGameState = globals.engine.GameStateManager.keyForIndex(index);
-        gbls.gameStateManager.setTo(nextGameState);
+        gbls.gameStateManager.setTo(nextGameState, testTransFrom, testTransTo);
     }
 
     gbls.profiler.end();
+}
+
+var transitionColor = m.vec4(0.0, 0.0, 0.0, 0.0);
+var transitionCurrentTime: f32 = 0.0;
+const transitionMaxTime = 0.5;
+
+fn testTransFrom(state: *State) bool {
+    if (transitionCurrentTime > transitionMaxTime) {
+        transitionCurrentTime = transitionMaxTime;
+        return false;
+    }
+
+    transitionColor.w = transitionCurrentTime / transitionMaxTime;
+
+    gbls.renderer.drawRectangle(
+        .{ .x = gbls.window.size.x * 0.5, .y = gbls.window.size.y * 0.5 },
+        .{ .x = gbls.window.size.x, .y = gbls.window.size.y },
+        .{ .color = transitionColor },
+    );
+
+    transitionCurrentTime += state.deltaTime;
+
+    return true;
+}
+
+fn testTransTo(state: *State) bool {
+    if (transitionCurrentTime < 0.0) {
+        transitionCurrentTime = 0.0;
+        return false;
+    }
+
+    transitionColor.w = transitionCurrentTime / transitionMaxTime;
+
+    gbls.renderer.drawRectangle(
+        .{ .x = gbls.window.size.x * 0.5, .y = gbls.window.size.y * 0.5 },
+        .{ .x = gbls.window.size.x, .y = gbls.window.size.y },
+        .{ .color = transitionColor },
+    );
+
+    transitionCurrentTime -= state.deltaTime;
+
+    return true;
 }
